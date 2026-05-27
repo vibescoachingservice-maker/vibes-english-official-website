@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vibes English — 英語自走状態を実現する伴走支援</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal:        #00A99D;
+    --teal-dark:   #007C78;
+    --teal-mid:    #008F88;
+    --teal-light:  #D0F0ED;
+    --teal-xlight: #F0FAF9;
+    --white:       #FFFFFF;
+    --off-white:   #F6F8F8;
+    --gray-light:  #E8EEED;
+    --gray:        #8AA8A6;
+    --text:        #1E2E2D;
+    --text-mid:    #3D5554;
+    --text-light:  #6B8C8A;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--text);
+    background: var(--white);
+    overflow-x: hidden;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── MOBILE NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; height: 56px;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--gray-light);
+  }
+  .nav-logo {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700; font-size: 18px;
+    color: var(--teal-dark);
+    letter-spacing: -0.3px;
+  }
+  .nav-menu-btn {
+    width: 40px; height: 40px;
+    border: none; background: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 5px; padding: 4px;
+  }
+  .nav-menu-btn span {
+    display: block; width: 22px; height: 2px;
+    background: var(--text); border-radius: 2px;
+    transition: all .3s;
+  }
+  .nav-menu-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-menu-btn.open span:nth-child(2) { opacity: 0; }
+  .nav-menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Drawer */
+  .nav-drawer {
+    position: fixed; top: 56px; left: 0; right: 0; bottom: 0;
+    background: var(--white);
+    z-index: 190;
+    transform: translateX(100%);
+    transition: transform .3s ease;
+    overflow-y: auto;
+    padding: 24px 20px;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .nav-drawer.open { transform: translateX(0); }
+  .nav-drawer a {
+    display: block; padding: 16px 0;
+    font-size: 16px; font-weight: 500; color: var(--text);
+    text-decoration: none; border-bottom: 1px solid var(--gray-light);
+    transition: color .2s;
+  }
+  .nav-drawer a:hover { color: var(--teal); }
+  .nav-drawer-cta {
+    margin-top: 24px;
+    background: var(--teal); color: white !important;
+    border: none; border-radius: 12px;
+    padding: 16px 20px !important; text-align: center;
+    font-size: 15px !important; font-weight: 700 !important;
+    border-bottom: none !important;
+    box-shadow: 0 4px 16px rgba(0,169,157,.3);
+  }
+
+  /* ── SECTIONS BASE ── */
+  section { padding: 60px 0; }
+  .container { max-width: 100%; padding: 0 16px; }
+  .section-tag {
+    font-size: 11px; font-weight: 700; color: var(--teal);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 24px; font-weight: 700;
+    line-height: 1.35; margin-bottom: 12px; letter-spacing: -0.3px;
+  }
+  .section-sub {
+    font-size: 13px; color: var(--text-mid); line-height: 1.85; font-weight: 300;
+  }
+  .section-header { margin-bottom: 32px; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100svh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 80px 0 48px;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, var(--teal-xlight) 0%, var(--white) 60%);
+    z-index: 0;
+  }
+  .hero-circle {
+    position: absolute; right: -80px; top: 60px;
+    width: 300px; height: 300px; border-radius: 50%;
+    background: var(--teal-light); opacity: .4; z-index: 0;
+  }
+  .hero-inner {
+    position: relative; z-index: 1;
+    padding: 0 20px;
+    display: flex; flex-direction: column; gap: 28px;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--teal-light); color: var(--teal-dark);
+    border-radius: 100px; padding: 5px 13px;
+    font-size: 11px; font-weight: 700; margin-bottom: 12px;
+    width: fit-content;
+  }
+  .hero-tag span { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); }
+  .hero h1 {
+    font-size: 30px; font-weight: 700;
+    line-height: 1.3; letter-spacing: -0.5px;
+    margin-bottom: 14px;
+  }
+  .hero h1 em { font-style: normal; color: var(--teal); }
+  .hero-sub {
+    font-size: 13px; line-height: 1.85; color: var(--text-mid);
+    margin-bottom: 24px; font-weight: 300;
+  }
+  .hero-btns {
+    display: flex; flex-direction: column; gap: 10px; margin-bottom: 0;
+  }
+  .btn-primary {
+    background: var(--teal); color: white;
+    padding: 15px 20px; border-radius: 12px;
+    font-size: 14px; font-weight: 700;
+    text-decoration: none; text-align: center;
+    display: block;
+    box-shadow: 0 4px 16px rgba(0,169,157,.3);
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: opacity .2s;
+  }
+  .btn-primary:active { opacity: .85; }
+  .btn-outline {
+    border: 1.5px solid var(--teal); color: var(--teal);
+    padding: 14px 20px; border-radius: 12px;
+    font-size: 14px; font-weight: 500;
+    text-decoration: none; text-align: center; display: block;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: background .2s;
+  }
+  .btn-outline:active { background: var(--teal-xlight); }
+
+  /* Hero Stats Card */
+  .hero-card {
+    background: white; border-radius: 20px;
+    padding: 24px 20px;
+    box-shadow: 0 12px 40px rgba(0,169,157,.12), 0 2px 8px rgba(0,0,0,.04);
+    border: 1px solid var(--gray-light);
+  }
+  .hero-card-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 600; color: var(--teal);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+  }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .stat { background: var(--teal-xlight); border-radius: 10px; padding: 14px 12px; text-align: center; }
+  .stat-num { font-size: 26px; font-weight: 700; color: var(--teal-dark); line-height: 1; }
+  .stat-label { font-size: 10px; color: var(--gray); margin-top: 3px; }
+  .hero-features { display: flex; flex-direction: column; gap: 10px; }
+  .hero-feat {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12px; color: var(--text-mid); line-height: 1.55;
+  }
+  .feat-dot {
+    width: 18px; height: 18px; border-radius: 50%; background: var(--teal);
+    flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .feat-dot svg { width: 9px; height: 9px; fill: white; }
+
+  /* ── PROBLEM ── */
+  .problem { background: var(--off-white); }
+  .pain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .pain-card {
+    background: white; border: 1px solid var(--gray-light);
+    border-radius: 12px; padding: 16px 12px; text-align: center;
+  }
+  .pain-card .ico { font-size: 20px; margin-bottom: 8px; }
+  .pain-card h4 { font-size: 12px; font-weight: 700; margin-bottom: 4px; line-height: 1.4; }
+  .pain-card p { font-size: 10px; color: var(--text-mid); line-height: 1.55; }
+  .pain-answer {
+    background: var(--teal-xlight); border-radius: 10px;
+    padding: 14px 16px; text-align: center; margin-bottom: 32px;
+  }
+  .pain-answer p { font-size: 13px; font-weight: 700; color: var(--teal-dark); }
+
+  .prob-card {
+    background: white; border-radius: 14px;
+    padding: 24px 20px; border: 1px solid var(--gray-light);
+    position: relative; overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .prob-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px; background: var(--teal);
+  }
+  .prob-num {
+    font-family: 'DM Sans', sans-serif; font-size: 32px;
+    font-weight: 300; color: var(--teal-light); line-height: 1; margin-bottom: 10px;
+  }
+  .prob-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .prob-card p { font-size: 12px; color: var(--text-mid); line-height: 1.8; }
+
+  /* ── VIBES ENGLISH とは ── */
+  .whatis { background: var(--white); }
+  .whatis-mission {
+    background: var(--teal-xlight);
+    border-left: 3px solid var(--teal);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 18px; margin-bottom: 20px;
+  }
+  .whatis-mission .label {
+    font-size: 10px; font-weight: 700; color: var(--teal);
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px;
+  }
+  .whatis-mission p { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.75; }
+  .whatis-note {
+    background: var(--teal); border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 28px; text-align: center;
+  }
+  .whatis-note p { font-size: 13px; font-weight: 700; color: white; line-height: 1.55; }
+
+  /* 融合 */
+  .fusion-block { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+  .fusion-item {
+    background: var(--teal-xlight); border: 1px solid var(--teal-light);
+    border-radius: 12px; padding: 18px 16px; text-align: center;
+  }
+  .fusion-item.dark { background: var(--teal-dark); }
+  .fusion-item .ico { font-size: 24px; margin-bottom: 8px; }
+  .fusion-item h4 { font-size: 13px; font-weight: 700; color: var(--teal-dark); margin-bottom: 5px; }
+  .fusion-item p { font-size: 11px; color: var(--text-mid); line-height: 1.65; }
+  .fusion-item.dark h4 { color: white; }
+  .fusion-item.dark p { color: rgba(255,255,255,.8); }
+  .fusion-sep { text-align: center; font-size: 20px; color: var(--teal); font-weight: 700; }
+
+  /* 比較表 */
+  .compare-block { border-radius: 12px; overflow: hidden; border: 1px solid var(--gray-light); margin-bottom: 32px; }
+  .compare-label {
+    font-size: 11px; font-weight: 700; color: var(--teal);
+    letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 16px;
+  }
+  .compare-row {
+    display: grid; grid-template-columns: 1fr;
+    border-bottom: 1px solid var(--gray-light);
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-topic {
+    background: var(--off-white);
+    padding: 12px 14px;
+    font-size: 11px; font-weight: 700; color: var(--text);
+    border-bottom: 1px solid var(--gray-light);
+  }
+  .compare-cells {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+  }
+  .compare-cell {
+    padding: 12px 10px; font-size: 11px; color: var(--text-mid);
+    text-align: center; border-right: 1px solid var(--gray-light);
+    line-height: 1.5;
+  }
+  .compare-cell:last-child { border-right: none; }
+  .compare-cell.vibes {
+    background: var(--teal-xlight); color: var(--teal-dark);
+    font-weight: 700;
+  }
+  .compare-header-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    background: var(--teal-dark);
+  }
+  .compare-header-cell {
+    padding: 10px 8px; font-size: 10px; font-weight: 500;
+    color: rgba(255,255,255,.7); text-align: center;
+  }
+  .compare-header-cell.vibes { color: white; font-weight: 700; font-size: 11px; }
+
+  /* Pillars */
+  .pillar-card { border-radius: 14px; overflow: hidden; border: 1px solid var(--gray-light); margin-bottom: 12px; }
+  .pillar-head { padding: 18px 20px; background: var(--teal); }
+  .pillar-head.mid { background: var(--teal-mid); }
+  .pillar-head.dark { background: var(--teal-dark); }
+  .pillar-icon { font-size: 22px; margin-bottom: 6px; }
+  .pillar-head h3 { font-size: 16px; font-weight: 700; color: white; margin-bottom: 3px; }
+  .pillar-head .sub { font-size: 11px; color: rgba(255,255,255,.8); }
+  .pillar-body { padding: 18px 20px; background: white; }
+  .pillar-tag {
+    display: inline-block; background: var(--teal-light);
+    color: var(--teal-dark); border-radius: 100px;
+    padding: 3px 10px; font-size: 10px; font-weight: 700; margin-bottom: 10px;
+  }
+  .pillar-body p { font-size: 12px; color: var(--text-mid); line-height: 1.8; }
+
+  /* Continuation */
+  .cont-block { border-radius: 16px; overflow: hidden; border: 1.5px solid var(--teal-light); margin-top: 32px; }
+  .cont-head {
+    background: var(--teal-xlight); padding: 20px 18px;
+    border-bottom: 1px solid var(--teal-light);
+  }
+  .cont-tag {
+    display: inline-block; background: var(--teal); color: white;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 3px 10px;
+    border-radius: 100px; margin-bottom: 8px; text-transform: uppercase;
+  }
+  .cont-head h3 { font-size: 16px; font-weight: 700; color: var(--teal-dark); margin-bottom: 6px; line-height: 1.45; }
+  .cont-head p { font-size: 12px; color: var(--text-mid); line-height: 1.85; }
+  .cont-steps { background: white; padding: 20px 18px; display: flex; flex-direction: column; gap: 14px; }
+  .cont-step {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: 12px;
+    border: 1px solid var(--gray-light);
+  }
+  .cont-step.highlight { background: var(--teal-xlight); border-color: var(--teal-light); }
+  .cont-step-dot {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; background: var(--off-white);
+    border: 2px solid var(--teal-light); flex-shrink: 0;
+  }
+  .cont-step.highlight .cont-step-dot { background: var(--teal); border-color: var(--teal); }
+  .cont-step-body {}
+  .cont-step-num { font-size: 9px; font-weight: 700; color: var(--teal); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .cont-step-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .cont-step-sub { font-size: 11px; color: var(--text-mid); line-height: 1.5; }
+
+  /* ── ABOUT ── */
+  .about-section { background: var(--off-white); }
+  .about-card { background: white; border-radius: 16px; overflow: hidden; border: 1px solid var(--gray-light); }
+  .about-header {
+    background: var(--teal-dark); padding: 24px 20px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .about-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 700; color: white;
+  }
+  .about-name-block {}
+  .about-name-label { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 3px; }
+  .about-name { font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 700; color: white; }
+  .about-role { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 2px; }
+  .about-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+  .badge {
+    background: rgba(255,255,255,.12); color: white;
+    border-radius: 100px; padding: 4px 11px;
+    font-size: 10px; border: 1px solid rgba(255,255,255,.2);
+  }
+  .badge.accent { background: rgba(0,169,157,.35); border-color: rgba(0,169,157,.55); }
+  .about-desc { padding: 18px 20px; font-size: 13px; color: var(--text-mid); line-height: 1.8; border-bottom: 1px solid var(--gray-light); }
+  .about-cards { padding: 18px 20px; display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .about-item {
+    background: var(--off-white); border: 1px solid var(--gray-light);
+    border-radius: 12px; padding: 16px 16px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .about-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: var(--teal-xlight);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .about-item h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .about-item p { font-size: 11px; color: var(--text-mid); line-height: 1.7; }
+
+  /* ── VIBES CYCLE ── */
+  .cycle-section { background: var(--white); }
+  .cycle-svg-wrap {
+    background: white; border-radius: 16px;
+    border: 1px solid var(--gray-light);
+    padding: 20px 12px; margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .cycle-svg-wrap svg { min-width: 300px; }
+  .phase-card { border-radius: 14px; overflow: hidden; border: 1px solid var(--gray-light); margin-bottom: 12px; }
+  .phase-head { padding: 18px 20px; background: var(--teal); color: white; }
+  .phase-head.mid { background: var(--teal-mid); }
+  .phase-head.late { background: var(--teal-dark); }
+  .phase-label { font-size: 10px; opacity: .8; margin-bottom: 3px; }
+  .phase-head h3 { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+  .phase-session { font-size: 11px; opacity: .8; }
+  .phase-body { padding: 18px 20px; background: white; }
+  .phase-items { display: flex; flex-direction: column; gap: 8px; }
+  .phase-item {
+    display: flex; gap: 8px; font-size: 12px;
+    color: var(--text-mid); line-height: 1.6; align-items: flex-start;
+  }
+  .phase-item::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--teal); flex-shrink: 0; margin-top: 6px;
+  }
+
+  /* Method */
+  .method-card {
+    background: white; border-radius: 14px; padding: 20px;
+    display: flex; gap: 16px; border: 1px solid var(--gray-light);
+    margin-bottom: 10px;
+  }
+  .method-num {
+    font-family: 'DM Sans', sans-serif; font-size: 30px;
+    font-weight: 700; color: var(--teal-light); line-height: 1; flex-shrink: 0;
+  }
+  .method-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .method-tag { font-size: 10px; color: var(--teal); font-weight: 500; margin-bottom: 6px; }
+  .method-card p { font-size: 12px; color: var(--text-mid); line-height: 1.7; }
+
+  /* ── ONBOARDING ── */
+  .onboarding-section { background: var(--off-white); }
+  .onboarding-intro {
+    background: var(--teal-xlight); border-left: 3px solid var(--teal);
+    border-radius: 0 10px 10px 0; padding: 14px 16px;
+    margin-bottom: 24px; font-size: 13px; color: var(--text); line-height: 1.7;
+  }
+  .step-card { background: white; border-radius: 14px; overflow: hidden; border: 1px solid var(--gray-light); margin-bottom: 12px; }
+  .step-head { padding: 16px 18px; background: var(--off-white); border-bottom: 1px solid var(--gray-light); }
+  .step-badge {
+    display: inline-block; background: var(--teal); color: white;
+    border-radius: 6px; padding: 3px 10px; font-size: 10px; font-weight: 700; margin-bottom: 8px;
+  }
+  .step-head h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .step-head .step-sub { font-size: 11px; color: var(--teal); font-weight: 500; font-style: italic; }
+  .step-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .step-item { display: flex; gap: 8px; align-items: flex-start; }
+  .step-label {
+    background: var(--teal); color: white; border-radius: 4px;
+    padding: 2px 7px; font-size: 9px; font-weight: 700;
+    white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+  }
+  .step-item p { font-size: 12px; color: var(--text-mid); line-height: 1.65; }
+
+  /* Onboarding flow */
+  .ob-flow { display: flex; flex-direction: column; gap: 0; margin-top: 24px; }
+  .ob-step { display: flex; align-items: stretch; gap: 0; }
+  .ob-step-left {
+    display: flex; flex-direction: column; align-items: center;
+    width: 44px; flex-shrink: 0;
+  }
+  .ob-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .ob-dot.teal { background: var(--teal); color: white; }
+  .ob-dot.dark { background: var(--teal-dark); color: white; }
+  .ob-line { width: 2px; background: var(--teal-light); flex: 1; margin: 4px 0; }
+  .ob-content {
+    flex: 1; padding: 4px 0 20px 12px;
+  }
+  .ob-step-label { font-size: 9px; font-weight: 700; color: var(--teal); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+  .ob-content h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .ob-content p { font-size: 12px; color: var(--text-mid); line-height: 1.65; }
+  .ob-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .ob-tag {
+    font-size: 10px; background: var(--teal-xlight); color: var(--teal-dark);
+    border: 1px solid var(--teal-light); border-radius: 5px; padding: 3px 8px; font-weight: 500;
+  }
+  .ob-goal {
+    background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+    border-radius: 12px; padding: 16px 18px; text-align: center;
+    margin-top: 4px;
+  }
+  .ob-goal .label { font-family: 'DM Sans', sans-serif; font-size: 9px; color: rgba(255,255,255,.55); letter-spacing: 2px; margin-bottom: 4px; }
+  .ob-goal p { font-size: 15px; font-weight: 700; color: white; }
+  .ob-goal .sub { font-size: 11px; color: rgba(255,255,255,.65); margin-top: 3px; }
+
+  /* ── PROGRAM ── */
+  .program-section { background: var(--off-white); }
+
+  /* ACCORDION */
+  .accordion-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; margin-top: 20px;
+    background: white; color: var(--teal-dark);
+    border: 2px solid var(--teal-light); border-radius: 12px;
+    padding: 16px 18px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+    transition: all .2s; text-align: left;
+  }
+  .accordion-toggle.open {
+    background: var(--teal); color: white;
+    border-color: var(--teal); border-radius: 12px 12px 0 0;
+    margin-bottom: 0;
+  }
+  .acc-toggle-left { display: flex; align-items: center; gap: 10px; }
+  .acc-toggle-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--teal-xlight); border: 1.5px solid var(--teal-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+  .accordion-toggle.open .acc-toggle-icon {
+    background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.3);
+  }
+  .acc-toggle-texts { display: flex; flex-direction: column; gap: 2px; }
+  .acc-toggle-label { font-size: 13px; font-weight: 700; }
+  .acc-toggle-sub { font-size: 10px; font-weight: 400; opacity: .65; }
+  .acc-arrow {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--teal-xlight); border: 1.5px solid var(--teal-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; flex-shrink: 0;
+    transition: transform .3s, background .2s;
+  }
+  .accordion-toggle.open .acc-arrow {
+    transform: rotate(180deg);
+    background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.3);
+  }
+  .accordion-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height .5s ease, opacity .4s ease;
+    opacity: 0;
+    border: 2px solid var(--teal-light); border-top: none;
+    border-radius: 0 0 12px 12px;
+  }
+  .accordion-body.open { max-height: 5000px; opacity: 1; }
+  .accordion-inner { padding: 20px 16px; }
+
+  /* ACE */
+  .ace-item {
+    background: white; border-radius: 12px; padding: 16px 18px;
+    border: 1px solid var(--gray-light); margin-bottom: 10px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .ace-big-letter {
+    font-family: 'DM Sans', sans-serif; font-size: 36px;
+    font-weight: 700; color: var(--teal); line-height: 1; flex-shrink: 0;
+  }
+  .ace-item-en { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 1px; }
+  .ace-item-ja { font-size: 10px; color: var(--teal); font-weight: 500; margin-bottom: 4px; }
+  .ace-item-desc { font-size: 11.5px; color: var(--text-mid); line-height: 1.65; }
+
+  .step-ov-card {
+    background: white; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--gray-light); margin-bottom: 10px;
+  }
+  .step-ov-head {
+    padding: 16px 18px; background: var(--teal);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .step-ov-head.s2 { background: var(--teal-mid); }
+  .step-ov-head.s3 { background: var(--teal-dark); }
+  .step-ov-head.s4 { background: var(--text); }
+  .step-ov-num {
+    font-family: 'DM Sans', sans-serif; font-size: 28px;
+    font-weight: 700; color: rgba(255,255,255,.25); line-height: 1; flex-shrink: 0;
+  }
+  .step-ov-type { font-size: 9px; font-weight: 700; color: rgba(255,255,255,.7); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+  .step-ov-name { font-size: 14px; font-weight: 700; color: white; line-height: 1.25; }
+  .step-ov-body { padding: 16px 18px; }
+  .step-ov-ace-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--teal-light); color: var(--teal-dark);
+    border-radius: 100px; padding: 3px 10px;
+    font-size: 10px; font-weight: 700; margin-bottom: 8px;
+  }
+  .step-ov-body p { font-size: 12px; color: var(--text-mid); line-height: 1.75; }
+  .step-ov-menus { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .menu-chip {
+    background: var(--teal-xlight); color: var(--teal-dark);
+    border-radius: 6px; padding: 3px 9px;
+    font-size: 10px; font-weight: 500; border: 1px solid var(--teal-light);
+  }
+
+  /* ── REPORTING ── */
+  .reporting-section { background: var(--white); }
+  .tl-item { display: flex; gap: 14px; position: relative; }
+  .tl-item:not(:last-child)::before {
+    content: ''; position: absolute; left: 17px; top: 36px; bottom: -16px;
+    width: 2px; background: var(--gray-light);
+  }
+  .tl-dot {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--teal); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+    position: relative; z-index: 1;
+  }
+  .tl-dot.secondary { background: var(--teal-light); color: var(--teal-dark); }
+  .tl-content { padding-bottom: 24px; flex: 1; }
+  .tl-label { font-size: 10px; color: var(--teal); font-weight: 500; margin-bottom: 3px; }
+  .tl-content h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .tl-content p { font-size: 12px; color: var(--text-mid); line-height: 1.7; }
+
+  .report-open-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; border-radius: 10px;
+    background: var(--off-white); border: 1.5px solid var(--gray-light);
+    cursor: pointer; font-size: 13px; font-weight: 700;
+    color: var(--teal-dark); transition: all .2s;
+    font-family: 'Noto Sans JP', sans-serif;
+    width: 100%; margin-top: 16px;
+    justify-content: center;
+  }
+  .report-open-btn-icon {
+    width: 26px; height: 26px; background: var(--teal);
+    border-radius: 6px; display: flex; align-items: center;
+    justify-content: center; font-size: 13px; flex-shrink: 0;
+  }
+
+  /* Survey items */
+  .survey-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .survey-item {
+    background: white; border-radius: 10px; border: 1px solid var(--gray-light);
+    padding: 12px 14px;
+  }
+  .survey-face {
+    display: inline-block; background: var(--teal-xlight);
+    border-radius: 5px; padding: 2px 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 9px; font-weight: 700;
+    color: var(--teal-dark); margin-bottom: 6px;
+  }
+  .survey-item h5 { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .survey-item p { font-size: 10.5px; color: var(--text-mid); line-height: 1.6; }
+
+  /* Value cards */
+  .value-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .value-card {
+    background: white; border-radius: 12px; border: 1px solid var(--gray-light);
+    padding: 16px;
+  }
+  .value-card .ico { font-size: 22px; margin-bottom: 8px; }
+  .value-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 5px; line-height: 1.4; }
+  .value-card p { font-size: 11.5px; color: var(--text-mid); line-height: 1.65; }
+
+  /* ── OUTCOMES ── */
+  .outcomes-section { background: var(--off-white); }
+  .outcomes-banner {
+    background: var(--teal); border-radius: 14px; padding: 20px 18px; margin-bottom: 20px;
+  }
+  .outcomes-banner h3 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 6px; line-height: 1.5; }
+  .outcomes-banner p { font-size: 12px; color: rgba(255,255,255,.85); line-height: 1.7; }
+  .outcome-card { background: white; border-radius: 14px; overflow: hidden; border: 1px solid var(--gray-light); margin-bottom: 12px; }
+  .outcome-head { padding: 18px 20px; }
+  .outcome-head.c1 { background: var(--teal); }
+  .outcome-head.c2 { background: var(--teal-mid); }
+  .outcome-head.c3 { background: var(--teal-dark); }
+  .outcome-head .ico { font-size: 20px; margin-bottom: 5px; }
+  .outcome-head h4 { font-size: 16px; font-weight: 700; color: white; }
+  .outcome-head .sub { font-size: 11px; color: rgba(255,255,255,.8); margin-top: 3px; }
+  .outcome-body { padding: 18px 20px; }
+  .outcome-body p { font-size: 12.5px; color: var(--text-mid); line-height: 1.8; }
+
+  /* ── PRICING ── */
+  .pricing-section { background: var(--white); }
+  .pricing-note-wide {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--teal-xlight); border: 1.5px solid var(--teal-light);
+    border-radius: 14px; padding: 18px 16px; margin-bottom: 24px;
+  }
+  .pricing-note-wide p { font-size: 12.5px; color: var(--text-mid); line-height: 1.85; }
+  .plan-card {
+    background: white; border-radius: 18px; overflow: hidden;
+    border: 1.5px solid var(--gray-light);
+    box-shadow: 0 4px 20px rgba(0,0,0,.05);
+    margin-bottom: 16px;
+  }
+  .plan-card.featured { border-color: var(--teal); box-shadow: 0 6px 30px rgba(0,150,136,.15); }
+  .plan-badge {
+    background: var(--teal); color: white;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-align: center; padding: 8px;
+  }
+  .plan-head { padding: 24px 20px 18px; }
+  .plan-tag { font-size: 10px; font-weight: 700; color: var(--teal); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+  .plan-name { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+  .plan-desc { font-size: 12px; color: var(--text-mid); line-height: 1.7; }
+  .plan-price-box {
+    padding: 16px 20px;
+    background: var(--off-white);
+    border-top: 1px solid var(--gray-light);
+    border-bottom: 1px solid var(--gray-light);
+  }
+  .plan-strikethrough { font-size: 11px; color: #999; text-decoration: line-through; margin-bottom: 4px; }
+  .plan-monitor { font-size: 10px; font-weight: 700; color: var(--teal); letter-spacing: 1px; margin-bottom: 3px; }
+  .plan-price { display: flex; align-items: baseline; gap: 5px; }
+  .plan-price .currency { font-size: 17px; font-weight: 700; color: var(--teal-dark); }
+  .plan-price .amount { font-size: 36px; font-weight: 700; color: var(--teal-dark); letter-spacing: -1px; }
+  .plan-price .tax { font-size: 11px; color: var(--text-light); }
+  .plan-price-sub { font-size: 11px; color: var(--text-mid); margin-top: 5px; }
+  .plan-includes { padding: 20px 20px; }
+  .plan-includes h5 { font-size: 10px; font-weight: 700; color: var(--text-light); letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; }
+  .plan-item { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 10px; font-size: 12.5px; color: var(--text-mid); line-height: 1.6; }
+  .plan-item .chk { color: var(--teal); font-weight: 700; font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+  .plan-cta { padding: 0 20px 24px; }
+  .plan-cta a {
+    display: block; text-align: center;
+    background: var(--teal); color: white;
+    border-radius: 10px; padding: 14px;
+    font-size: 14px; font-weight: 700;
+    text-decoration: none; font-family: 'Noto Sans JP', sans-serif;
+    transition: opacity .2s;
+  }
+  .plan-cta a:active { opacity: .85; }
+  .plan-cta.secondary a {
+    background: white; color: var(--teal);
+    border: 1.5px solid var(--teal);
+  }
+  .pricing-note { margin-top: 20px; font-size: 11px; color: var(--text-light); line-height: 1.8; }
+
+  /* Flow */
+  .pricing-flow { margin-top: 24px; background: white; border-radius: 14px; padding: 20px 16px; border: 1px solid var(--gray-light); }
+  .pricing-flow h4 { font-size: 13px; font-weight: 700; color: var(--teal-dark); margin-bottom: 16px; text-align: center; }
+  .flow-list { display: flex; flex-direction: column; gap: 8px; }
+  .flow-row { display: flex; align-items: center; gap: 10px; }
+  .flow-step {
+    flex: 1; background: var(--off-white);
+    border: 1.5px solid var(--gray-light);
+    border-radius: 10px; padding: 12px 14px; text-align: center;
+  }
+  .flow-step.hl { background: var(--teal-xlight); border-color: var(--teal-light); }
+  .flow-step .fs-label { font-size: 9px; font-weight: 700; color: var(--teal); letter-spacing: 1px; margin-bottom: 3px; }
+  .flow-step .fs-title { font-size: 12px; font-weight: 700; color: var(--text); }
+  .flow-step .fs-sub { font-size: 10px; color: var(--text-mid); margin-top: 2px; }
+  .flow-arrow-down {
+    text-align: center; font-size: 16px; color: var(--teal-light); padding: 4px 0;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+    padding: 60px 0; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .cta-section::before {
+    content: ''; position: absolute;
+    top: -80px; right: -80px; width: 280px; height: 280px;
+    border-radius: 50%; background: rgba(255,255,255,.06);
+  }
+  .cta-section h2 {
+    font-size: 24px; font-weight: 700; color: white;
+    margin-bottom: 14px; position: relative; z-index: 1; line-height: 1.4;
+  }
+  .cta-section p {
+    font-size: 13px; color: rgba(255,255,255,.8);
+    margin-bottom: 28px; font-weight: 300;
+    position: relative; z-index: 1; line-height: 1.8;
+    padding: 0 8px;
+  }
+  .cta-tags {
+    display: flex; justify-content: center;
+    gap: 8px; flex-wrap: wrap; margin-bottom: 28px;
+    position: relative; z-index: 1; padding: 0 8px;
+  }
+  .cta-tag {
+    background: rgba(255,255,255,.15); color: white;
+    border-radius: 100px; padding: 6px 14px;
+    font-size: 11px; border: 1px solid rgba(255,255,255,.25);
+  }
+  .btn-white {
+    background: white; color: var(--teal-dark);
+    padding: 15px 28px; border-radius: 12px;
+    font-size: 14px; font-weight: 700;
+    text-decoration: none; display: inline-block;
+    position: relative; z-index: 1;
+    box-shadow: 0 4px 20px rgba(0,0,0,.15);
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--text); color: rgba(255,255,255,.6);
+    padding: 32px 20px; text-align: center; font-size: 12px;
+  }
+  footer span { color: var(--teal); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp .6s ease both; }
+  .fade-up.d1 { animation-delay: .1s; }
+  .fade-up.d2 { animation-delay: .2s; }
+  .fade-up.d3 { animation-delay: .3s; }
+  .fade-up.d4 { animation-delay: .4s; }
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity .5s ease, transform .5s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ── REPORT MODAL ── */
+  .report-modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9000;
+    background: rgba(30,46,45,.6); backdrop-filter: blur(4px);
+    align-items: flex-end; justify-content: center;
+    padding: 0;
+  }
+  .report-modal-overlay.open { display: flex; }
+  .report-modal-box {
+    background: white; border-radius: 20px 20px 0 0;
+    overflow: hidden; width: 100%;
+    max-height: 90svh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 -8px 40px rgba(0,0,0,.2);
+  }
+  .report-modal-handle {
+    width: 36px; height: 4px; background: var(--gray-light);
+    border-radius: 2px; margin: 10px auto 6px;
+    flex-shrink: 0;
+  }
+  .report-modal-head {
+    padding: 12px 20px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--gray-light); flex-shrink: 0;
+  }
+  .report-modal-label { font-size: 10px; font-weight: 700; color: var(--teal); letter-spacing: 1.5px; text-transform: uppercase; }
+  .report-modal-title { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 2px; }
+  .report-modal-close {
+    width: 30px; height: 30px; border-radius: 50%; border: none;
+    background: var(--off-white); cursor: pointer; font-size: 14px; color: var(--text-mid);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .report-modal-scroll { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+  .report-modal-inner {
+    transform: scale(.72); transform-origin: top center;
+    width: 139%; margin-left: -19.5%;
+    pointer-events: none;
+  }
+  .report-modal-fade {
+    position: sticky; bottom: 0; height: 100px;
+    background: linear-gradient(to bottom, transparent, white);
+    pointer-events: none; margin-top: -100px;
+  }
+  .report-modal-footer {
+    padding: 12px 20px; border-top: 1px solid var(--gray-light);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; background: var(--off-white);
+  }
+  .report-modal-note { font-size: 11px; color: var(--text-mid); flex: 1; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav>
+  <div class="nav-logo">Vibes English</div>
+  <button class="nav-menu-btn" id="menuBtn" onclick="toggleMenu()" aria-label="メニュー">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="nav-drawer" id="navDrawer">
+  <a href="#whatis" onclick="closeMenu()">サービス内容</a>
+  <a href="#about" onclick="closeMenu()">講師について</a>
+  <a href="#oscar" onclick="closeMenu()">伴走サイクル</a>
+  <a href="#onboarding" onclick="closeMenu()">オンボーディング</a>
+  <a href="#program" onclick="closeMenu()">プログラム</a>
+  <a href="#reporting" onclick="closeMenu()">レポーティング</a>
+  <a href="#pricing" onclick="closeMenu()">料金</a>
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSdpPTGFUltPHmANs2Jt6rlDW2JdkhpqL9f3q4ZOewu6duKRSw/viewform?usp=sharing&ouid=107953720158343866156" target="_blank" class="nav-drawer-cta">無料体験セッションを申し込む</a>
+</div>
+
+<!-- ── ① HERO ── -->
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="hero-circle"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag fade-up"><span></span>伴走支援型英会話サービス</div>
+      <h1 class="fade-up d1">
+        「学んで使う」から<br>
+        <em>「使って学ぶ」</em><em>時代へ。</em>
+      </h1>
+      <p class="hero-sub fade-up d2">
+        受動的な学習習慣を根底から変革し、戦略・実戦・分析を通じて、自律的で質の高い学習環境を自ら構築する支援をすることで、実用的な英語の習得を実現します。
+      </p>
+      <div class="hero-btns fade-up d3">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdpPTGFUltPHmANs2Jt6rlDW2JdkhpqL9f3q4ZOewu6duKRSw/viewform?usp=sharing&ouid=107953720158343866156" target="_blank" class="btn-primary">無料体験セッションを申し込む</a>
+        <a href="#whatis" class="btn-outline">サービス詳細を見る</a>
+      </div>
+    </div>
+    <div class="fade-up d4">
+      <div class="hero-card">
+        <div class="hero-card-title">Program at a Glance</div>
+        <div class="stats-row">
+          <div class="stat">
+            <div class="stat-num">24</div>
+            <div class="stat-label">回のセッション</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">6</div>
+            <div class="stat-label">ヶ月集中プログラム</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">60</div>
+            <div class="stat-label">分／セッション</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">8</div>
+            <div class="stat-label">回のレポーティング</div>
+          </div>
+        </div>
+        <div class="hero-features">
+          <div class="hero-feat">
+            <div class="feat-dot"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            毎セッション後の振り返りアンケート＋学習分析レポート
+          </div>
+          <div class="hero-feat">
+            <div class="feat-dot"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            半年後に自分で学習をコントロールできる力を身につける
+          </div>
+          <div class="hero-feat">
+            <div class="feat-dot"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></div>
+            内省と分析で安定した学習環境を構築
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ② 目的 ── -->
+<section class="problem" id="origin">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Our Purpose</div>
+      <h2 class="section-title">Vibes Englishの目的</h2>
+    </div>
+
+    <div class="reveal">
+      <p style="font-size:11px;font-weight:700;color:var(--teal);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">こんな悩み、ありませんか？</p>
+      <div class="pain-grid">
+        <div class="pain-card"><div class="ico">🤝</div><h4>伴走者が欲しい</h4><p>一人では続かない。一緒に走ってくれる存在が欲しい。</p></div>
+        <div class="pain-card"><div class="ico">😔</div><h4>挫折して続かない</h4><p>何度も始めては止まる繰り返しに疲れた。</p></div>
+        <div class="pain-card"><div class="ico">🗣️</div><h4>話して覚えたい</h4><p>テキストより、実際に使いながら身につけたい。</p></div>
+        <div class="pain-card"><div class="ico">🏁</div><h4>終わりが見えない</h4><p>ゴールがわからず、いつまで続ければ良いか。</p></div>
+      </div>
+      <div class="pain-answer">
+        <p>Vibes Englishは、その悩みに正面から向き合うために設計されました。</p>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-bottom:16px;text-align:center;">
+      <p style="font-size:14px;color:var(--text-mid);line-height:1.85;font-weight:300;">Vibes Englishが核としているのは、<strong style="color:var(--text);">実践の質</strong>と<strong style="color:var(--text);">継続の力</strong>を高めること。英語を「使って」何かをする体験と、自分で学習を回し続ける習慣。その両輪が、本当の英語習得につながります。</p>
+    </div>
+
+    <div class="reveal">
+      <div class="prob-card">
+        <div class="prob-num">01</div>
+        <h3>英語を「使って」習得するアカデミア</h3>
+        <p>単語の振り返りやシャドーイングをひたすらこなす授業ではありません。英語を使って議論する、英語でゲームをする、英語で何かを学ぶ。「英語で何かをする」スタンスが実践の質を高めます。</p>
+      </div>
+      <div class="prob-card">
+        <div class="prob-num">02</div>
+        <h3>継続を阻む障壁を、自分で取り除く力</h3>
+        <p>モチベーションの低下や習慣化の失敗は、原因が見えていないから繰り返す。内省と振り返りを通じて、自分の障壁を認識・修正できるようになることで、はじめて「続く力」が身につきます。</p>
+      </div>
+      <div class="prob-card">
+        <div class="prob-num">03</div>
+        <h3>卒業後も一生使える「学習の型」を渡す</h3>
+        <p>英語を実践的に使う環境をもとに、自分で学びに対する課題を見つけ、主体的に学習を回せる状態、それがゴール。プログラムが終わっても一生使い続けられます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ③ Vibes English とは ── -->
+<section class="whatis" id="whatis">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Service Overview</div>
+      <h2 class="section-title">Vibes English とは</h2>
+    </div>
+
+    <div class="whatis-mission reveal">
+      <div class="label">ミッション</div>
+      <p>受動的な学習習慣を根底から変革し、戦略・実戦・分析を通じて、自律的で質の高い学習環境を自ら構築する支援をすることで、実用的な英語の習得を実現します。</p>
+    </div>
+    <div class="whatis-note reveal">
+      <p>「圧倒的な実戦」と「正しい戦略」をデータでつなぐ。<br>英語を日常にする、伴走型英会話アカデミア。</p>
+    </div>
+
+    <!-- 融合 -->
+    <div class="reveal" style="margin-bottom:28px;">
+      <p style="font-size:11px;font-weight:700;color:var(--teal);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;">どこが「融合」しているのか</p>
+      <div class="fusion-block">
+        <div class="fusion-item">
+          <div class="ico">🗣️</div>
+          <h4>英会話の「実践」</h4>
+          <p>実際に話す・使う体験。楽しく、量をこなすアウトプット。</p>
+        </div>
+        <div class="fusion-sep">×</div>
+        <div class="fusion-item">
+          <div class="ico">🔬</div>
+          <h4>コーチングの「分析」</h4>
+          <p>第二言語習得論に基づくデータ可視化と科学的な軌道修正。</p>
+        </div>
+        <div class="fusion-sep">=</div>
+        <div class="fusion-item dark">
+          <div class="ico">✨</div>
+          <h4>Vibes English</h4>
+          <p>「話した実感」をデータ化し、なぜ話せなかったかをプロと毎月分析・修正。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 比較 -->
+    <div class="reveal" style="margin-bottom:28px;">
+      <p class="compare-label">3つの決定的な違い</p>
+      <div class="compare-block">
+        <div class="compare-header-row">
+          <div class="compare-header-cell">従来の英会話</div>
+          <div class="compare-header-cell">既存コーチング</div>
+          <div class="compare-header-cell vibes">✦ Vibes English</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-topic">① ゴール</div>
+          <div class="compare-cells">
+            <div class="compare-cell">通い続けてもらう<br><span style="font-size:10px;color:#b0b0b0;">依存モデル</span></div>
+            <div class="compare-cell">コーチが短期管理<br><span style="font-size:10px;color:#b0b0b0;">管理依存</span></div>
+            <div class="compare-cell vibes">英語の自走状態<br><span style="font-size:10px;color:var(--teal);">学習の型を獲得</span></div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-topic">② 実践</div>
+          <div class="compare-cells">
+            <div class="compare-cell">レッスン内のみ<br><span style="font-size:10px;color:#b0b0b0;">主観的FB</span></div>
+            <div class="compare-cell">インプット教材中心<br><span style="font-size:10px;color:#b0b0b0;">単語・シャドーイング</span></div>
+            <div class="compare-cell vibes">日常の生きたアウトプット<br><span style="font-size:10px;color:var(--teal);">議論・ゲーム</span></div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-topic">③ 分析</div>
+          <div class="compare-cells">
+            <div class="compare-cell">感覚的FB止まり<br><span style="font-size:10px;color:#b0b0b0;">数値化なし</span></div>
+            <div class="compare-cell">テスト結果のみ<br><span style="font-size:10px;color:#b0b0b0;">成果チェック</span></div>
+            <div class="compare-cell vibes">スコア推移の可視化<br><span style="font-size:10px;color:var(--teal);">グラフ化</span></div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-topic">④ スタイル</div>
+          <div class="compare-cells">
+            <div class="compare-cell">教科書的な勉強<br><span style="font-size:10px;color:#b0b0b0;">義務感</span></div>
+            <div class="compare-cell">スパルタ自習<br><span style="font-size:10px;color:#b0b0b0;">息が詰まる</span></div>
+            <div class="compare-cell vibes">ライフスタイル型<br><span style="font-size:10px;color:var(--teal);">伴走デザイン</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 継続ブロック -->
+    <div class="cont-block reveal">
+      <div class="cont-head">
+        <span class="cont-tag">Post-Program Support</span>
+        <h3>プログラム修了後も、学びは続く。</h3>
+        <p>6ヶ月の伴走支援で身につけた自律学習の仕組みと、あなた専用にカスタマイズされたセッション環境はそのまま次のステージへ。信頼関係のある講師との継続フリートークセッションで、英会話力を磨き続ける選択肢を用意しています。</p>
+      </div>
+      <div class="cont-steps">
+        <div class="cont-step">
+          <div class="cont-step-dot">🗣️</div>
+          <div class="cont-step-body">
+            <div class="cont-step-num">Step 01</div>
+            <div class="cont-step-title">無料相談</div>
+            <div class="cont-step-sub">目標と現在地を整理。プログラム設計の出発点。</div>
+          </div>
+        </div>
+        <div class="cont-step highlight">
+          <div class="cont-step-dot">🔄</div>
+          <div class="cont-step-body">
+            <div class="cont-step-num">Step 02</div>
+            <div class="cont-step-title">伴走支援プラン</div>
+            <div class="cont-step-sub">6ヶ月・全24回。戦略×実戦×分析で自立学習を構築。</div>
+          </div>
+        </div>
+        <div class="cont-step">
+          <div class="cont-step-dot">🎓</div>
+          <div class="cont-step-body">
+            <div class="cont-step-num">Step 03</div>
+            <div class="cont-step-title">修了・自立</div>
+            <div class="cont-step-sub">コーチ依存ゼロ。自分で学習をコントロールできる状態へ。</div>
+          </div>
+        </div>
+        <div class="cont-step highlight">
+          <div class="cont-step-dot">⚡</div>
+          <div class="cont-step-body">
+            <div class="cont-step-num">Step 04</div>
+            <div class="cont-step-title">継続フリートーク</div>
+            <div class="cont-step-sub">修了者限定。カスタム環境で英会話力を磨き続ける。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── ④ 講師紹介 ── -->
+<section class="about-section" id="about">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">About the Instructor</div>
+      <h2 class="section-title">講師紹介</h2>
+    </div>
+    <div class="about-card reveal">
+      <div class="about-header">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="about-avatar">R</div>
+          <div class="about-name-block">
+            <div class="about-name-label">About the Instructor</div>
+            <div class="about-name">Rui Kurimoto</div>
+            <div class="about-role">Vibes English 代表・講師</div>
+          </div>
+        </div>
+        <div class="about-badges">
+          <span class="badge">23歳</span>
+          <span class="badge">アメリカ大学 卒業予定</span>
+          <span class="badge">英語圏3カ国在住</span>
+          <span class="badge accent">COACH U Core Essentials（ICF）</span>
+          <span class="badge">🏆 TOEIC 910</span>
+        </div>
+      </div>
+      <div class="about-desc">
+        高校1年末にカナダ編入を決意。フィリピン・カナダ・アメリカでの生活を通じ英語を実地習得。コーチング×ITの知見を掛け合わせVibes Englishを設計しました。
+      </div>
+      <div class="about-cards">
+        <div class="about-item">
+          <div class="about-icon">🎓</div>
+          <div>
+            <h4>海外学習歴</h4>
+            <p>フィリピン3ヶ月 → カナダ公立高校 → アメリカ大学進学。英語圏3カ国での実生活から言語を習得。</p>
+          </div>
+        </div>
+        <div class="about-item">
+          <div class="about-icon">💼</div>
+          <div>
+            <h4>IT × グローバルビジネス</h4>
+            <p>ITベンチャー長期インターン。海外スタッフとの英語MTG・最先端動画テクノロジーのグローバルリサーチを経験。</p>
+          </div>
+        </div>
+        <div class="about-item">
+          <div class="about-icon">🏫</div>
+          <div>
+            <h4>英語教育・アカデミック</h4>
+            <p>サマースクールのインストラクター・英語塾講師として指導経験。アメリカ大学での多数のプレゼン・英語論文執筆経験豊富。</p>
+          </div>
+        </div>
+        <div class="about-item">
+          <div class="about-icon">🎯</div>
+          <div>
+            <h4>ICFコーチング × データ活用</h4>
+            <p>COACH U Core Essentials Program修了（ICF）。コーチングプラットフォーム企業でインターン。Vibesサイクルに基づく学習設計を実践。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ⑤ Vibes伴走サイクル ── -->
+<section class="cycle-section" id="oscar">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Coaching Framework</div>
+      <h2 class="section-title">Vibes伴走サイクル —<br>らせん階段の構造</h2>
+      <p class="section-sub">3つの伴走フェーズのサイクルを伴走し、主体的に回せる学習習慣を構築します。このサイクルは「らせん階段」のように、同じステップを繰り返しながらも確実に上の段へ進んでいく構造です。</p>
+    </div>
+
+    <!-- SVG spiral simplified for mobile -->
+    <div class="cycle-svg-wrap reveal">
+      <svg width="100%" viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <!-- 縦軸 -->
+        <line x1="170" y1="240" x2="170" y2="28" stroke="#C8D8D7" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="170" y="22" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#8AA8A6">成長</text>
+        <!-- 設計 node -->
+        <circle cx="183" cy="210" r="22" fill="#007C78"/>
+        <text x="183" y="207" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="9" fill="white" font-weight="700">設計</text>
+        <text x="183" y="218" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="rgba(255,255,255,.7)">Strategy</text>
+        <!-- 実戦 node -->
+        <circle cx="157" cy="160" r="22" fill="#008F88"/>
+        <text x="157" y="157" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="9" fill="white" font-weight="700">実戦</text>
+        <text x="157" y="168" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="rgba(255,255,255,.7)">Action</text>
+        <!-- 内省 node -->
+        <circle cx="183" cy="110" r="22" fill="#00A99D"/>
+        <text x="183" y="107" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="9" fill="white" font-weight="700">内省</text>
+        <text x="183" y="118" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="rgba(255,255,255,.7)">Reflection</text>
+        <!-- 設計② -->
+        <circle cx="157" cy="65" r="22" fill="#007C78" opacity=".7"/>
+        <text x="157" y="62" text-anchor="middle" font-family="Noto Sans JP,sans-serif" font-size="9" fill="white" font-weight="700">設計②</text>
+        <text x="157" y="73" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="rgba(255,255,255,.7)">上の段へ</text>
+        <!-- curves -->
+        <path d="M 183 188 Q 170 174 157 182" fill="none" stroke="#0F6E56" stroke-width="2" marker-end="url(#arr)"/>
+        <path d="M 157 138 Q 170 124 183 132" fill="none" stroke="#0F6E56" stroke-width="2" marker-end="url(#arr)"/>
+        <path d="M 183 88 Q 170 76 157 84" fill="none" stroke="#0F6E56" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+        <!-- labels -->
+        <text x="220" y="213" font-family="Noto Sans JP,sans-serif" font-size="9" fill="#3D5554">目標の言語化</text>
+        <text x="220" y="222" font-family="Noto Sans JP,sans-serif" font-size="9" fill="#3D5554">フォーカス設定</text>
+        <text x="90" y="163" text-anchor="end" font-family="Noto Sans JP,sans-serif" font-size="9" fill="#3D5554">英語を使う</text>
+        <text x="90" y="172" text-anchor="end" font-family="Noto Sans JP,sans-serif" font-size="9" fill="#3D5554">アウトプット</text>
+        <text x="220" y="113" font-family="Noto Sans JP,sans-serif" font-size="9" fill="#3D5554">振り返り</text>
+        <text x="220" y="122" font-family="Noto Sans JP,sans-serif" font-size="9" fill="#3D5554">データ分析</text>
+      </svg>
+    </div>
+
+    <div class="reveal">
+      <div class="phase-card">
+        <div class="phase-head">
+          <div class="phase-label">Phase 1</div>
+          <h3>戦略設計フェーズ</h3>
+          <div class="phase-session">セッション 1〜3回目</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-items">
+            <div class="phase-item">自分の「現在地」と「目標」を言語化し、具体的なロードマップを設計</div>
+            <div class="phase-item">英語学習の障壁と原因を特定し、戦略を立案</div>
+            <div class="phase-item">ACEモデルに基づき、セッションの優先順位を決定</div>
+          </div>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-head mid">
+          <div class="phase-label">Phase 2</div>
+          <h3>実戦・実践フェーズ</h3>
+          <div class="phase-session">セッション 4〜20回目</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-items">
+            <div class="phase-item">ACEモデルに沿った多角的なセッションで英語を「使い倒す」</div>
+            <div class="phase-item">毎回の振り返りアンケートでデータを積み上げる</div>
+            <div class="phase-item">月次レポートで戦略を修正し、次のサイクルへ</div>
+          </div>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-head late">
+          <div class="phase-label">Phase 3</div>
+          <h3>自立・完成フェーズ</h3>
+          <div class="phase-session">セッション 21〜24回目</div>
+        </div>
+        <div class="phase-body">
+          <div class="phase-items">
+            <div class="phase-item">自分でVibesサイクルを回せる状態を確認・強化</div>
+            <div class="phase-item">最終レポートで6ヶ月の成長を可視化</div>
+            <div class="phase-item">卒業後も続く自律的学習ロードマップを設計</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ⑥ オンボーディング ── -->
+<section class="onboarding-section" id="onboarding">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Onboarding</div>
+      <h2 class="section-title">オンボーディング —<br>プログラム開始前の準備</h2>
+    </div>
+    <div class="onboarding-intro reveal">
+      プログラム開始前に、あなた専用の「学習設計図」を作成します。ただ勉強を始めるのではなく、現在地・目標・障壁を整理した上で、最初のセッションから全力でスタートできる状態を整えます。
+    </div>
+
+    <div class="ob-flow reveal">
+      <div class="ob-step">
+        <div class="ob-step-left">
+          <div class="ob-dot teal">01</div>
+          <div class="ob-line"></div>
+        </div>
+        <div class="ob-content">
+          <div class="ob-step-label">Step 01</div>
+          <h4>無料体験セッション</h4>
+          <p>60分のセッションで現在地・目標・英語学習の課題を整理。プログラムの設計に向けた出発点。</p>
+          <div class="ob-tags">
+            <span class="ob-tag">現在地確認</span>
+            <span class="ob-tag">目標設定</span>
+            <span class="ob-tag">60分</span>
+          </div>
+        </div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-step-left">
+          <div class="ob-dot teal">02</div>
+          <div class="ob-line"></div>
+        </div>
+        <div class="ob-content">
+          <div class="ob-step-label">Step 02</div>
+          <h4>ビジョンレポート作成</h4>
+          <p>アンケートをもとにレポートを作成。現在地の定義・理想シーンの言語化・パーソナル・ロードマップの初稿設計。</p>
+          <div class="ob-tags">
+            <span class="ob-tag">現在地の定義</span>
+            <span class="ob-tag">ロードマップ</span>
+          </div>
+        </div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-step-left">
+          <div class="ob-dot dark">03</div>
+          <div style="flex:1;"></div>
+        </div>
+        <div class="ob-content" style="padding-bottom:14px;">
+          <div class="ob-step-label">Step 03</div>
+          <h4>オンボーディングセッション</h4>
+          <p>レポートをもとにコーチと戦略を確定。具体的なフィードバックと方針の相談・学習戦略の最終決定。</p>
+          <div class="ob-tags">
+            <span class="ob-tag">戦略確定</span>
+            <span class="ob-tag">プログラム設計</span>
+          </div>
+        </div>
+      </div>
+      <div class="ob-goal">
+        <div class="label">START</div>
+        <p>🚀 1回目のレッスンへ</p>
+        <div class="sub">設計図が完成した状態でプログラムスタート</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ⑦ ACEプログラム ── -->
+<section class="program-section" id="program">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Free Talk Program</div>
+      <h2 class="section-title">ACE Program —<br>セッションの全体構成</h2>
+      <p class="section-sub">4つのステップが積み上がることで、英語コミュニケーションの「土台→実戦→論理→感情」を段階的に完成させます。</p>
+      <button class="accordion-toggle" onclick="toggleAccordion('program-body')">
+        <span class="acc-toggle-left">
+          <span class="acc-toggle-icon">🗂️</span>
+          <span class="acc-toggle-texts">
+            <span class="acc-toggle-label">詳細を見る</span>
+            <span class="acc-toggle-sub">ACEモデルの思想と全4ステップの構成</span>
+          </span>
+        </span>
+        <span class="acc-arrow">▼</span>
+      </button>
+    </div>
+    <div class="accordion-body" id="program-body">
+      <div class="accordion-inner">
+        <div style="background:white;border-radius:12px;padding:18px 16px;border:1px solid var(--gray-light);margin-bottom:16px;">
+          <div style="font-size:10px;font-weight:700;color:var(--teal);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">ACEモデルとは？</div>
+          <p style="font-size:13px;color:var(--text-mid);line-height:1.9;margin-bottom:12px;">これまでの「英語コーチング＝シャドーイングの添削や単語の暗記チェック」や「一般的な英会話＝先生が用意したテキストをなぞる受け身のレッスン」とは、思想の次元が根本から違います。</p>
+          <p style="font-size:13px;color:var(--text);line-height:1.9;font-weight:500;">受講生が主体となって「多角的な視点から英語を使い倒す」ためのVibes English独自の構造です。</p>
+        </div>
+
+        <div class="ace-item">
+          <div class="ace-big-letter">A</div>
+          <div>
+            <div class="ace-item-en">Adaptability</div>
+            <div class="ace-item-ja">適応力・即興力</div>
+            <div class="ace-item-desc">想定外の状況・不意打ちの雑談・旅先のトラブルに、頭を真っ白にせずスマートに適応する力。ゲーム系・シミュレーション系で鍛える。</div>
+          </div>
+        </div>
+        <div class="ace-item">
+          <div class="ace-big-letter">C</div>
+          <div>
+            <div class="ace-item-en">Connection</div>
+            <div class="ace-item-ja">論理的な説明力・説得力</div>
+            <div class="ace-item-desc">英語で価値観やニュースに対して筋道を立て、論理的に意見を組み立て、知性をもって相手を納得させる力。議論系で鍛える。</div>
+          </div>
+        </div>
+        <div class="ace-item" style="margin-bottom:20px;">
+          <div class="ace-big-letter">E</div>
+          <div>
+            <div class="ace-item-en">Engagement</div>
+            <div class="ace-item-ja">関わり合い・深い対話</div>
+            <div class="ace-item-desc">自分の喜怒哀楽や人間性をオープンにシェアし、相手と心で深く繋がる対話力。感情系で鍛える。</div>
+          </div>
+        </div>
+
+        <div class="step-ov-card">
+          <div class="step-ov-head">
+            <div class="step-ov-num">01</div>
+            <div>
+              <div class="step-ov-type">STEP 1 — ゲーム系</div>
+              <div class="step-ov-name">Psychological &amp; Ice-Breaking</div>
+            </div>
+          </div>
+          <div class="step-ov-body">
+            <div class="step-ov-ace-badge">A — Adaptability</div>
+            <p>英語を話す際の心理的ハードルを破壊し、講師との強固な信頼関係を一瞬で構築する。</p>
+            <div class="step-ov-menus">
+              <div class="menu-chip">Never Have I Ever</div>
+              <div class="menu-chip">2 Truths &amp; 1 Lie</div>
+            </div>
+          </div>
+        </div>
+        <div class="step-ov-card">
+          <div class="step-ov-head s2">
+            <div class="step-ov-num">02</div>
+            <div>
+              <div class="step-ov-type">STEP 2 — シミュレーション系</div>
+              <div class="step-ov-name">Real-world Simulation</div>
+            </div>
+          </div>
+          <div class="step-ov-body">
+            <div class="step-ov-ace-badge">A — Adaptability</div>
+            <p>現実の日常・旅先・ビジネスで最も焦る「ハラハラ場面」を疑似体験し、実践的な突破力を養う。</p>
+            <div class="step-ov-menus">
+              <div class="menu-chip">即興ロールプレイング</div>
+              <div class="menu-chip">Crisis Management</div>
+            </div>
+          </div>
+        </div>
+        <div class="step-ov-card">
+          <div class="step-ov-head s3">
+            <div class="step-ov-num">03</div>
+            <div>
+              <div class="step-ov-type">STEP 3 — 議論系</div>
+              <div class="step-ov-name">Logical &amp; Critical Thinking</div>
+            </div>
+          </div>
+          <div class="step-ov-body">
+            <div class="step-ov-ace-badge" style="background:#D0F0ED;color:#004E4B;">C — Connection</div>
+            <p>英語で自らの意見を論理的に組み立て、相手を納得させる知性を鍛える。</p>
+            <div class="step-ov-menus">
+              <div class="menu-chip">30秒 Topic Discussion</div>
+              <div class="menu-chip">Polarizing Debate</div>
+            </div>
+          </div>
+        </div>
+        <div class="step-ov-card">
+          <div class="step-ov-head s4">
+            <div class="step-ov-num">04</div>
+            <div>
+              <div class="step-ov-type">STEP 4 — 感情系</div>
+              <div class="step-ov-name">Emotional Intelligence &amp; Self-Expression</div>
+            </div>
+          </div>
+          <div class="step-ov-body">
+            <div class="step-ov-ace-badge" style="background:#E8EEED;color:#1E2E2D;">E — Engagement</div>
+            <p>自身のストーリーをパーソナルかつ魅力的に語り、相手の心を動かす洗練された自己表現をマスターする。</p>
+            <div class="step-ov-menus">
+              <div class="menu-chip">Emotional Storytelling</div>
+              <div class="menu-chip">Diary Sharing &amp; Refinement</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ⑨ レポーティング ── -->
+<section class="reporting-section" id="reporting">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Reporting System</div>
+      <h2 class="section-title">レポーティング —<br>データによる学習管理</h2>
+      <p class="section-sub">毎セッション後の振り返りアンケートをデータ化し、学習状況を可視化・管理。全24回のデータが積み上がり、確実な成長を証明するレポートを計8回作成します。</p>
+      <button class="accordion-toggle" onclick="toggleAccordion('reporting-body')">
+        <span class="acc-toggle-left">
+          <span class="acc-toggle-icon">📊</span>
+          <span class="acc-toggle-texts">
+            <span class="acc-toggle-label">詳細を見る</span>
+            <span class="acc-toggle-sub">レポーティングシステムの全内容</span>
+          </span>
+        </span>
+        <span class="acc-arrow">▼</span>
+      </button>
+    </div>
+
+    <div class="accordion-body" id="reporting-body">
+      <div class="accordion-inner">
+        <!-- タイムライン -->
+        <div style="font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:16px;text-align:center;">レポートのタイミング（計8回）</div>
+        <div style="max-width:440px;margin:0 auto 28px;">
+          <div class="tl-item">
+            <div class="tl-dot">毎</div>
+            <div class="tl-content">
+              <div class="tl-label">毎セッション後 — 全24回</div>
+              <h4>振り返りアンケートの実施・データ蓄積</h4>
+              <p>全15問を数分で回答。毎回のデータを積み上げ、学習の流れを客観的に把握する。</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot">月</div>
+            <div class="tl-content">
+              <div class="tl-label">毎月末 — 月1回 × 6回</div>
+              <h4>月次レポート &amp; 1ヶ月振り返り</h4>
+              <p>「今月の成長」と「つまずきのパターン」を可視化。次の1ヶ月の学習戦略を確認・修正する。</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot">中</div>
+            <div class="tl-content">
+              <div class="tl-label">プログラム中間 — 第12回後</div>
+              <h4>中間レポート &amp; 後半戦略の再設計</h4>
+              <p>初期スコアと現在を比較し、学習アプローチの方向性を見直す。</p>
+            </div>
+          </div>
+          <div class="tl-item" style="position:relative;">
+            <div class="tl-dot secondary">終</div>
+            <div class="tl-content" style="padding-bottom:0;">
+              <div class="tl-label">プログラム最終 — 第24回後</div>
+              <h4>最終レポート &amp; 卒業後の学習設計</h4>
+              <p>6ヶ月の全データで成長を証明。卒業後も自律的に学習を続けるロードマップを設計する。</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="report-open-btn" onclick="openReportModal()">
+          <span class="report-open-btn-icon">📄</span>
+          レポートのサンプルを見る
+          <span style="font-size:11px;opacity:.6;">↗</span>
+        </button>
+
+        <!-- アンケート項目 -->
+        <div style="margin-top:24px;">
+          <div style="font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:12px;text-align:center;">振り返りアンケートの測定項目（全15問）</div>
+          <div class="survey-grid">
+            <div class="survey-item">
+              <div class="survey-face">面 1</div>
+              <h5>スピーキングの手応え</h5>
+              <p>話せた実感・言えなかった表現・改善したい振る舞い</p>
+            </div>
+            <div class="survey-item">
+              <div class="survey-face">面 2</div>
+              <h5>英語スキルの自己評価</h5>
+              <p>瞬発力・語彙・発音・リスニングを1〜10でスコア化</p>
+            </div>
+            <div class="survey-item">
+              <div class="survey-face">面 3</div>
+              <h5>学習の取り組み状況</h5>
+              <p>心理的ハードル・集中度・次回の練習素材</p>
+            </div>
+            <div class="survey-item">
+              <div class="survey-face">面 4</div>
+              <h5>目標との連動確認</h5>
+              <p>ビジョンとのつながり感・コーチへのリクエスト</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 価値 -->
+        <div style="margin-top:24px;">
+          <div style="font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:12px;text-align:center;">レポーティングが生む3つの価値</div>
+          <div class="value-grid">
+            <div class="value-card">
+              <div class="ico">📊</div>
+              <h4>つまずきや伸び悩みの見える化</h4>
+              <p>データで課題を把握し、感情論でなく次の戦略を自ら修正できる。</p>
+            </div>
+            <div class="value-card">
+              <div class="ico">🔍</div>
+              <h4>成長の証明と継続する自信</h4>
+              <p>数値で「過去の自分より言えていること」を可視化。停滞期も乗り越える。</p>
+            </div>
+            <div class="value-card">
+              <div class="ico">🎯</div>
+              <h4>自己管理する力の構築</h4>
+              <p>卒業後もコーチ不要で学習サイクルを回せる自律的な習慣を作る。</p>
+            </div>
+          </div>
+        </div>
+
+        <p style="margin-top:20px;text-align:center;font-size:13px;font-weight:700;color:var(--teal);">感情ではなくデータで、着実な成長と継続的な学習サイクルを確立する。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ⑩ 受講後のゴール ── -->
+<section class="outcomes-section" id="outcome">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Program Outcome</div>
+      <h2 class="section-title">受講後のゴール —<br>英語で自分の人生を広げる</h2>
+    </div>
+    <div class="outcomes-banner reveal">
+      <h3>コーチがいなくても、自らツールを使いこなし、振り返りによって一生涯成長し続けられる状態。</h3>
+      <p>24回の終了時点でコーチ依存ゼロ。6ヶ月で構築した自律学習の仕組みと、カスタマイズされたセッション環境はそのまま継続プランでも活かせます。</p>
+    </div>
+    <div class="outcome-card reveal">
+      <div class="outcome-head c1">
+        <div class="ico">🧠</div>
+        <h4>実力</h4>
+        <div class="sub">"勉強する英語"から"使える英語"へ</div>
+      </div>
+      <div class="outcome-body">
+        <p>単なる知識としてだけでなく、実際の場面で意思疎通ができる「実用的なコミュニケーション力」を習得します。半年後には、自分の考えを英語で堂々と伝えられる実感を手にできます。</p>
+      </div>
+    </div>
+    <div class="outcome-card reveal">
+      <div class="outcome-head c2">
+        <div class="ico">🔄</div>
+        <h4>習慣</h4>
+        <div class="sub">英語が「日常の一部」になる生活</div>
+      </div>
+      <div class="outcome-body">
+        <p>根性や一時のやる気のみに流されず、日常に英語学習が溶け込んだ状態を作ります。卒業後も無理なく自然に続けられる継続学習の習慣を構築します。</p>
+      </div>
+    </div>
+    <div class="outcome-card reveal">
+      <div class="outcome-head c3">
+        <div class="ico">⚡</div>
+        <h4>環境</h4>
+        <div class="sub">自分の成長を自分でコントロールする力</div>
+      </div>
+      <div class="outcome-body">
+        <p>振り返りを通じて「何が原因で、どう改善すべきか」を自分で判断できるようになります。どんな環境でも自力で成長し続けられる自信が身につきます。</p>
+      </div>
+    </div>
+    <p class="reveal" style="text-align:center;font-size:14px;font-weight:700;color:var(--teal);margin-top:28px;">英語を「道具」として使いこなす人を、一人でも多く。</p>
+  </div>
+</section>
+
+<!-- ── ⑪ 料金プラン ── -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Pricing</div>
+      <h2 class="section-title">料金プラン</h2>
+    </div>
+
+    <div class="pricing-note-wide reveal">
+      <span style="font-size:20px;flex-shrink:0;margin-top:2px;">💡</span>
+      <p>継続して英会話学習を続ける受講生のために、継続プランの料金を伴走支援プランより抑えた設定にしています。学習を続けるほどセッション単価が下がり、<strong>長期的なトータル投資コストを抑えられる仕組み</strong>です。</p>
+    </div>
+
+    <!-- Plan A -->
+    <div class="plan-card featured reveal">
+      <div class="plan-badge">メインプログラム</div>
+      <div class="plan-head">
+        <div class="plan-tag">6-Month Coaching</div>
+        <div class="plan-name">伴走支援プラン</div>
+        <div class="plan-desc">戦略・実戦・分析の3軸で、自律的な英語学習の土台を6ヶ月で築きます。</div>
+      </div>
+      <div class="plan-price-box">
+        <div class="plan-strikethrough">通常価格 ¥300,000（税抜）</div>
+        <div class="plan-monitor">🎁 モニター特別価格（先着5名）</div>
+        <div class="plan-price">
+          <span class="currency">¥</span>
+          <span class="amount">150,000</span>
+          <span class="tax">（税抜）</span>
+        </div>
+        <div class="plan-price-sub">全24回 / 月4回 × 6ヶ月 ｜ 1回あたり約¥6,250</div>
+      </div>
+      <div class="plan-includes">
+        <h5>含まれるもの</h5>
+        <div class="plan-item"><span class="chk">✓</span>毎回60分のマンツーマンセッション（全24回）</div>
+        <div class="plan-item"><span class="chk">✓</span>ACEモデル — 8つのカリキュラム実践</div>
+        <div class="plan-item"><span class="chk">✓</span>オンボーディング（目標・現在地の設計）</div>
+        <div class="plan-item"><span class="chk">✓</span>毎回の振り返りアンケートと学習分析レポート（計8回）</div>
+        <div class="plan-item"><span class="chk">✓</span>Vibesサイクルによる伴走サイクル管理</div>
+        <div class="plan-item"><span class="chk">✓</span>受講者専用ポータル（セッションノート／予約管理／セッションアーカイブなど）</div>
+        <div class="plan-item"><span class="chk">✓</span>セッション外チャットサポート</div>
+      </div>
+      <div class="plan-cta">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdpPTGFUltPHmANs2Jt6rlDW2JdkhpqL9f3q4ZOewu6duKRSw/viewform?usp=sharing&ouid=107953720158343866156" target="_blank">無料体験セッションを申し込む →</a>
+      </div>
+    </div>
+
+    <!-- Plan B -->
+    <div class="plan-card reveal">
+      <div class="plan-head" style="padding-top:28px;">
+        <div class="plan-tag">Post-Program</div>
+        <div class="plan-name">継続フリートークプラン</div>
+        <div class="plan-desc">6ヶ月の伴走支援修了者限定。すでに構築されたカスタムセッション環境と信頼できる講師というリソースをそのまま活かし、フリートークで英会話力を磨き続けます。</div>
+      </div>
+      <div class="plan-price-box">
+        <div class="plan-price">
+          <span class="currency">¥</span>
+          <span class="amount">150,000</span>
+          <span class="tax">（税抜）</span>
+        </div>
+        <div class="plan-price-sub">全24回 / 月4回 × 6ヶ月 ｜ 1回あたり約¥6,250</div>
+      </div>
+      <div class="plan-includes">
+        <h5>含まれるもの</h5>
+        <div class="plan-item"><span class="chk">✓</span>毎回60分のフリートークセッション（全24回）</div>
+        <div class="plan-item"><span class="chk">✓</span>あなた専用にカスタマイズされた会話テーマ設計</div>
+        <div class="plan-item"><span class="chk">✓</span>習得済みの振り返り習慣を自主的に継続</div>
+        <div class="plan-item"><span class="chk">✓</span>信頼関係のある講師との継続セッション</div>
+        <div class="plan-item" style="color:#aaa;"><span style="color:#ccc;">—</span>&nbsp;レポート・分析サポートは含まない</div>
+      </div>
+      <div class="plan-cta secondary">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdpPTGFUltPHmANs2Jt6rlDW2JdkhpqL9f3q4ZOewu6duKRSw/viewform?usp=sharing&ouid=107953720158343866156" target="_blank">継続プランについて相談する →</a>
+      </div>
+    </div>
+
+    <!-- Flow -->
+    <div class="pricing-flow reveal">
+      <h4>📌 受講から継続までのフロー</h4>
+      <div class="flow-list">
+        <div class="flow-step">
+          <div class="fs-label">Step 01</div>
+          <div class="fs-title">無料相談</div>
+          <div class="fs-sub">目標・現在地を整理</div>
+        </div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step hl">
+          <div class="fs-label">Step 02</div>
+          <div class="fs-title">伴走支援プラン</div>
+          <div class="fs-sub">6ヶ月 / 全24回</div>
+        </div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step">
+          <div class="fs-label">Step 03</div>
+          <div class="fs-title">修了・自立</div>
+          <div class="fs-sub">自律学習の完成</div>
+        </div>
+        <div class="flow-arrow-down">↓</div>
+        <div class="flow-step hl">
+          <div class="fs-label">Step 04</div>
+          <div class="fs-title">継続プラン</div>
+          <div class="fs-sub">フリートークで磨き続ける</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="pricing-note reveal">※ 料金はすべて税抜き表示です。お支払い方法・分割については無料相談時にご案内します。<br>※ 継続フリートークプランは、伴走支援プラン修了者のみご利用いただけます。</p>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section" id="cta">
+  <div class="container">
+    <h2>英語を「道具」として<br>使いこなす人を、一人でも多く。</h2>
+    <p>あなたの「英語で実現したいこと」を明確化し、最短で自立した学習習慣を身につける伴走支援をします。</p>
+    <div class="cta-tags">
+      <span class="cta-tag">全24回 / 6ヶ月</span>
+      <span class="cta-tag">毎回60分</span>
+      <span class="cta-tag">振り返りレポート付き</span>
+      <span class="cta-tag">自立学習の仕組みを構築</span>
+      <span class="cta-tag">コーチ依存ゼロへ</span>
+    </div>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdpPTGFUltPHmANs2Jt6rlDW2JdkhpqL9f3q4ZOewu6duKRSw/viewform?usp=sharing&ouid=107953720158343866156" target="_blank" class="btn-white">無料体験セッションを申し込む →</a>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <p>© 2026 <span>Vibes English</span> — Vibesサイクル × ACEモデル</p>
+</footer>
+
+<!-- ── REPORT MODAL ── -->
+<div class="report-modal-overlay" id="report-modal" onclick="closeReportModalOutside(event)">
+  <div class="report-modal-box">
+    <div class="report-modal-handle"></div>
+    <div class="report-modal-head">
+      <div>
+        <div class="report-modal-label">Sample Report</div>
+        <div class="report-modal-title">学習分析レポート — サンプル</div>
+      </div>
+      <button class="report-modal-close" onclick="closeReportModal()">✕</button>
+    </div>
+    <div class="report-modal-scroll">
+      <div class="report-modal-inner">
+        <!-- Report content (same as original) -->
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Playfair+Display:ital@1&display=swap');
+          .rp{font-family:'Noto Sans JP',sans-serif;color:#1E2E2D;background:#fff;max-width:860px;margin:0 auto;}
+          .cover{background:#007C78;padding:52px 56px 44px;position:relative;overflow:hidden;}
+          .cover::before{content:'';position:absolute;right:-100px;top:-100px;width:440px;height:440px;border-radius:50%;background:rgba(255,255,255,.05);}
+          .c-brand{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:rgba(255,255,255,.45);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:28px;}
+          .c-eye{font-size:11px;font-weight:500;color:#D0F0ED;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+          .c-title{font-family:'DM Sans',sans-serif;font-size:40px;font-weight:600;color:#fff;line-height:1.12;letter-spacing:-0.5px;margin-bottom:6px;}
+          .c-title em{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;color:#D0F0ED;font-size:42px;}
+          .c-desc{font-size:13px;color:rgba(255,255,255,.55);font-weight:300;line-height:1.75;margin-bottom:44px;max-width:500px;}
+          .c-meta{display:flex;gap:36px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.12);padding-top:24px;}
+          .cm-label{font-size:10px;font-weight:500;color:rgba(255,255,255,.38);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;}
+          .cm-val{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:rgba(255,255,255,.88);}
+          .band{padding:10px 56px;display:flex;align-items:center;gap:16px;}
+          .band-a{background:#007C78;}.band-b{background:#008F88;}.band-c{background:#00A99D;}
+          .band-num{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:2px;}
+          .band-title{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:#fff;}
+          .band-sub{font-size:11px;color:rgba(255,255,255,.55);font-weight:300;margin-left:auto;}
+          .body{padding:36px 56px;}
+          .sec{margin-bottom:36px;}
+          .sec-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00A99D;margin-bottom:10px;}
+          .gauge-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+          .gauge-card{background:#F0FAF9;border-radius:14px;padding:20px 22px;}
+          .gauge-name{font-size:12px;font-weight:500;color:#3D5554;margin-bottom:14px;}
+          .gauge-track-wrap{display:flex;align-items:center;gap:12px;}
+          .gauge-track{flex:1;height:10px;background:#E8EEED;border-radius:100px;overflow:hidden;}
+          .gauge-fill{height:100%;border-radius:100px;background:#00A99D;}
+          .gauge-fill.hi{background:#007C78;}
+          .gauge-num{font-family:'DM Sans',sans-serif;font-size:22px;font-weight:600;color:#007C78;min-width:32px;text-align:right;line-height:1;}
+          .gauge-denom{font-size:11px;color:#8AA8A6;font-weight:300;}
+          .gauge-dots{display:flex;gap:5px;margin-top:10px;}
+          .gdot{width:22px;height:22px;border-radius:50%;font-size:9px;font-weight:700;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;}
+          .gdot.on{background:#00A99D;color:#fff;}
+          .gdot.off{background:#E8EEED;color:transparent;}
+          .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+          .skill-card{background:#fff;border:1px solid #E8EEED;border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;}
+          .skill-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:#00A99D;}
+          .skill-letter{font-family:'DM Sans',sans-serif;font-size:28px;font-weight:600;color:#D0F0ED;line-height:1;margin-bottom:6px;}
+          .skill-name{font-size:12px;font-weight:700;color:#1E2E2D;margin-bottom:10px;}
+          .skill-bar-track{height:7px;background:#E8EEED;border-radius:100px;overflow:hidden;margin-bottom:6px;}
+          .skill-bar-fill{height:100%;border-radius:100px;background:#00A99D;}
+          .skill-score{display:flex;justify-content:space-between;align-items:baseline;}
+          .skill-num{font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#007C78;}
+          .skill-tag{font-size:10px;color:#8AA8A6;font-weight:300;}
+          .dual-chart{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+          .chart-card{background:#fff;border:1px solid #E8EEED;border-radius:14px;padding:22px 24px;}
+          .cc-title{font-size:13px;font-weight:700;color:#1E2E2D;margin-bottom:3px;}
+          .cc-sub{font-size:11px;color:#6B8C8A;font-weight:300;margin-bottom:14px;}
+          .badge-rp{display:inline-flex;align-items:center;background:#D0F0ED;color:#007C78;border-radius:100px;padding:3px 10px;font-size:10px;font-weight:700;margin-bottom:14px;}
+          .chart-ph{background:#F6F8F8;border:1.5px dashed #E8EEED;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8AA8A6;}
+          .ph-icon{font-size:24px;opacity:.55;}
+          .ph-title{font-size:12px;font-weight:500;color:#6B8C8A;}
+          .ph-note{font-size:11px;color:#8AA8A6;font-weight:300;}
+          .footer-rp{background:#F6F8F8;border-top:1px solid #E8EEED;padding:18px 56px;display:flex;align-items:center;justify-content:space-between;}
+          .f-brand{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#007C78;}
+          .f-note{font-size:11px;color:#8AA8A6;font-weight:300;}
+        </style>
+        <div class="rp">
+          <div class="cover">
+            <div class="c-brand">Vibes English — Session Report</div>
+            <div class="c-eye">Session Analysis</div>
+            <h1 class="c-title">セッション<br><em>分析レポート</em></h1>
+            <p class="c-desc">セッションの内省を通じて、実戦で通用する英語力とビジネスリーダーとしてのプレゼンスを研ぎ澄ます記録です。</p>
+            <div class="c-meta">
+              <div><div class="cm-label">受講者名</div><div class="cm-val">山田 太郎 様</div></div>
+              <div><div class="cm-label">セッション日</div><div class="cm-val">2026年5月19日</div></div>
+              <div><div class="cm-label">担当コーチ</div><div class="cm-val">栗本 瑠衣</div></div>
+              <div><div class="cm-label">セッション回数</div><div class="cm-val">第 8 回 / 全24回</div></div>
+            </div>
+          </div>
+          <div class="band band-a">
+            <span class="band-num">BLOCK A</span>
+            <span class="band-title">セッション評価</span>
+            <span class="band-sub">満足度 / 話せた感覚 / スキル別自己評価</span>
+          </div>
+          <div class="body">
+            <div class="sec">
+              <div class="sec-label">セッション満足度 &amp; 英語を話せている感覚</div>
+              <div class="gauge-grid">
+                <div class="gauge-card">
+                  <div class="gauge-name">セッションの満足度</div>
+                  <div class="gauge-track-wrap">
+                    <div class="gauge-track"><div class="gauge-fill hi" style="width:80%"></div></div>
+                    <div><div class="gauge-num">8</div><div class="gauge-denom">/ 10</div></div>
+                  </div>
+                  <div class="gauge-dots">
+                    <div class="gdot on">1</div><div class="gdot on">2</div><div class="gdot on">3</div>
+                    <div class="gdot on">4</div><div class="gdot on">5</div><div class="gdot on">6</div>
+                    <div class="gdot on">7</div><div class="gdot on">8</div>
+                    <div class="gdot off">9</div><div class="gdot off">10</div>
+                  </div>
+                </div>
+                <div class="gauge-card">
+                  <div class="gauge-name">英語を話せている感覚</div>
+                  <div class="gauge-track-wrap">
+                    <div class="gauge-track"><div class="gauge-fill" style="width:70%"></div></div>
+                    <div><div class="gauge-num">7</div><div class="gauge-denom">/ 10</div></div>
+                  </div>
+                  <div class="gauge-dots">
+                    <div class="gdot on">1</div><div class="gdot on">2</div><div class="gdot on">3</div>
+                    <div class="gdot on">4</div><div class="gdot on">5</div><div class="gdot on">6</div>
+                    <div class="gdot on">7</div>
+                    <div class="gdot off">8</div><div class="gdot off">9</div><div class="gdot off">10</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="sec">
+              <div class="sec-label">スキル別自己内省評価</div>
+              <div class="skill-grid">
+                <div class="skill-card">
+                  <div class="skill-letter">A</div>
+                  <div class="skill-name">瞬発力</div>
+                  <div class="skill-bar-track"><div class="skill-bar-fill" style="width:60%"></div></div>
+                  <div class="skill-score"><div class="skill-num">6</div><div class="skill-tag">/ 10</div></div>
+                </div>
+                <div class="skill-card">
+                  <div class="skill-letter">B</div>
+                  <div class="skill-name">正確さ</div>
+                  <div class="skill-bar-track"><div class="skill-bar-fill" style="width:70%"></div></div>
+                  <div class="skill-score"><div class="skill-num">7</div><div class="skill-tag">/ 10</div></div>
+                </div>
+                <div class="skill-card">
+                  <div class="skill-letter">C</div>
+                  <div class="skill-name">複雑さ</div>
+                  <div class="skill-bar-track"><div class="skill-bar-fill" style="width:50%"></div></div>
+                  <div class="skill-score"><div class="skill-num">5</div><div class="skill-tag">/ 10</div></div>
+                </div>
+                <div class="skill-card">
+                  <div class="skill-letter">D</div>
+                  <div class="skill-name">音韻</div>
+                  <div class="skill-bar-track"><div class="skill-bar-fill" style="width:80%"></div></div>
+                  <div class="skill-score"><div class="skill-num">8</div><div class="skill-tag">/ 10</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="sec">
+              <div class="sec-label" style="color:#007C78;">スコア推移グラフ（スプレッドシートから貼り付け）</div>
+              <div class="dual-chart">
+                <div class="chart-card">
+                  <div class="cc-title">満足度 &amp; 話せた感覚 推移</div>
+                  <div class="cc-sub">セッション回数 × 10段階スコア</div>
+                  <div class="badge-rp">折れ線グラフ</div>
+                  <div class="chart-ph" style="height:140px;">
+                    <div class="ph-icon">📈</div>
+                    <div class="ph-title">グラフをここに貼り付け</div>
+                    <div class="ph-note">推奨：横 340px × 縦 140px</div>
+                  </div>
+                </div>
+                <div class="chart-card">
+                  <div class="cc-title">スキル別レーダーチャート</div>
+                  <div class="cc-sub">A瞬発力 / B正確さ / C複雑さ / D音韻</div>
+                  <div class="badge-rp">レーダーチャート</div>
+                  <div class="chart-ph" style="height:140px;">
+                    <div class="ph-icon">🕸️</div>
+                    <div class="ph-title">グラフをここに貼り付け</div>
+                    <div class="ph-note">推奨：横 340px × 縦 140px</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="footer-rp">
+            <div class="f-brand">Vibes English</div>
+            <div class="f-note">※ 上記はサンプルです</div>
+          </div>
+        </div>
+      </div>
+      <div class="report-modal-fade"></div>
+    </div>
+    <div class="report-modal-footer">
+      <span class="report-modal-note">※ 上記はサンプルです。実際のレポートは受講者データに基づき作成されます。</span>
+      <button class="report-modal-close" style="width:auto;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--text-mid);" onclick="closeReportModal()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Menu toggle
+  function toggleMenu() {
+    const btn = document.getElementById('menuBtn');
+    const drawer = document.getElementById('navDrawer');
+    btn.classList.toggle('open');
+    drawer.classList.toggle('open');
+    document.body.style.overflow = drawer.classList.contains('open') ? 'hidden' : '';
+  }
+  function closeMenu() {
+    document.getElementById('menuBtn').classList.remove('open');
+    document.getElementById('navDrawer').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Report modal
+  function openReportModal() {
+    document.getElementById('report-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeReportModal() {
+    document.getElementById('report-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function closeReportModalOutside(e) {
+    if (e.target === document.getElementById('report-modal')) closeReportModal();
+  }
+
+  // Accordion
+  function toggleAccordion(id) {
+    const body = document.getElementById(id);
+    const allBtns = document.querySelectorAll('.accordion-toggle');
+    let ctrlBtn = null;
+    allBtns.forEach(b => {
+      if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(id)) ctrlBtn = b;
+    });
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open');
+    if (ctrlBtn) {
+      ctrlBtn.classList.toggle('open');
+      const label = ctrlBtn.querySelector('.acc-toggle-label');
+      if (label) label.textContent = isOpen ? '詳細を見る' : '閉じる';
+      const arrow = ctrlBtn.querySelector('.acc-arrow');
+      if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+    }
+  }
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 50);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
