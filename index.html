@@ -363,7 +363,7 @@
   /* JOURNEY SECTION */
   .journey-section { background: var(--off-white); }
 
-  .jn-timeline { display: flex; flex-direction: column; gap: 0; max-width: 860px; margin: 0 auto; }
+  .jn-timeline { display: flex; flex-direction: column; gap: 0; max-width: 860px; }
 
   .jn-step { display: flex; gap: 32px; align-items: flex-start; }
 
@@ -559,11 +559,14 @@
     max-height: 0; overflow: hidden;
     transition: max-height .5s ease, opacity .4s ease;
     opacity: 0;
-    border: 2px solid var(--teal-light); border-top: none;
+    border: none;
     border-radius: 0 0 14px 14px;
     margin-top: 0;
   }
-  .accordion-body.open { max-height: 5000px; opacity: 1; }
+  .accordion-body.open {
+    max-height: 20000px; opacity: 1;
+    border: 2px solid var(--teal-light); border-top: none;
+  }
 
 
   /* ===== PRICING SECTION ===== */
@@ -863,6 +866,14 @@
     .ace-item-en { font-size: 16px; }
   }
 
+  /* COMMUNITY SECTION MOBILE */
+  @media (max-width: 768px) {
+    #community [style*="grid-template-columns:1fr 1fr 1fr"],
+    #community [style*="grid-template-columns: 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    #community [style*="grid-template-columns:1fr 1fr"],
+    #community [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+  }
+
   /* SMALL PHONES (≤390px) */
   @media (max-width: 390px) {
     .hero-title { font-size: 27px; }
@@ -870,103 +881,19 @@
     .stats-row, .glance-stats { grid-template-columns: 1fr; }
   }
 
-  /* ══════════════════════════════════
-     MOBILE INLINE-STYLE OVERRIDES
-  ══════════════════════════════════ */
   @media (max-width: 768px) {
-
-    /* 5列グリッド（悩みカード）→ 2列 */
-    [style*="grid-template-columns:repeat(5,1fr)"],
-    [style*="grid-template-columns: repeat(5, 1fr)"] {
-      grid-template-columns: repeat(2, 1fr) !important;
+    /* oscar section 3-col grids */
+    #oscar .reveal [style*="grid-template-columns:1fr 1fr 1fr"],
+    #oscar .reveal [style*="grid-template-columns: 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    /* SVG螺旋図をモバイルで縮小 */
+    #oscar svg { overflow: visible; }
+    /* ピボットラベルをモバイルで非表示 */
+    @media (max-width: 480px) {
+      #oscar .reveal div[style*="padding:24px 32px"] { padding: 16px !important; }
     }
-
-    /* 融合ブロック "1fr auto 1fr auto 1fr" → 縦1列 */
-    [style*="grid-template-columns:1fr auto 1fr auto 1fr"],
-    [style*="grid-template-columns: 1fr auto 1fr auto 1fr"] {
-      grid-template-columns: 1fr !important;
-    }
-
-    /* 比較テーブル小サイズ化 */
-    table[style*="font-size:13px"] { font-size: 11px !important; }
-    table[style*="font-size:13px"] th,
-    table[style*="font-size:13px"] td { padding: 10px 8px !important; font-size: 11px !important; }
-
-    /* 講師ヘッダーバー */
-    [style*="background:var(--teal-dark);padding:28px 36px"] {
-      padding: 16px !important;
-    }
-    [style*="padding:32px 36px"] { padding: 20px 16px !important; }
-
-    /* 3カラム系インライングリッド */
-    [style*="grid-template-columns:1fr 1fr 1fr;gap:20px"],
-    [style*="grid-template-columns:1fr 1fr 1fr;gap:14px"],
-    [style*="grid-template-columns:1fr 1fr 1fr;gap:10px"] {
-      grid-template-columns: 1fr !important;
-    }
-
-    /* 2カラム系インライングリッド（振り返りアンケート等） */
-    [style*="grid-template-columns:1fr 1fr;gap:14px"],
-    [style*="grid-template-columns:1fr 1fr;gap:10px"] {
-      grid-template-columns: 1fr !important;
-    }
-
-    /* フリートーク内パディング */
-    [style*="padding:20px 28px 16px"] { padding: 16px 16px 12px !important; }
-    [style*="padding:20px 28px"] { padding: 16px !important; }
-
-    /* セクション内大パディング */
-    [style*="padding:28px 24px;text-align:center"] { padding: 20px 14px !important; }
-    [style*="padding:28px 22px"] { padding: 20px 16px !important; }
-
-    /* 伴走サイクル3フェーズ外ラップ */
-    .reveal[style*="grid-template-columns:1fr 1fr 1fr"] {
-      grid-template-columns: 1fr !important;
-    }
-
-    /* ブリッジバンド h2 */
-    #service-details h2 { font-size: 17px !important; }
-    #service-details p  { font-size: 12px !important; }
-
-    /* レポートモーダル */
-    .report-modal-box {
-      width: 96vw !important;
-      max-width: 96vw !important;
-      max-height: 88vh !important;
-      border-radius: 16px !important;
-    }
-    .report-modal-head { padding: 14px 16px !important; }
-    .report-modal-title { font-size: 14px !important; }
-
-    /* hero card */
-    .hero-card { padding: 24px 18px; }
-
-    /* plan cards */
-    .plan-head { padding: 24px 20px !important; }
-    .plan-price-box, .plan-includes, .plan-cta { padding-left: 20px !important; padding-right: 20px !important; }
-
-    /* バンド */
-    .band { padding: 10px 20px !important; }
-
-    /* SVGフロー図縮小 */
-    svg[viewBox="0 0 680 340"] { max-width: 100%; height: auto; }
-
-    /* hero h1: nowrapを維持しつつフォントを縮小してはみ出し防止 */
-    .hero h1[style*="white-space:nowrap"],
-    .hero h1[style*="white-space: nowrap"] {
-      font-size: clamp(20px, 5.5vw, 32px) !important;
-      letter-spacing: -0.5px !important;
-    }
-
-    /* hero card: モバイルでは非表示 */
-    .hero-card { display: none; }
-    .hero-inner { grid-template-columns: 1fr !important; }
-    .hero-inner > div:first-child { align-items: flex-start !important; text-align: left !important; }
-    .hero-tag { align-self: flex-start !important; }
-    .hero-sub[style*="margin-left:auto"] { margin-left: 0 !important; margin-right: 0 !important; max-width: 100% !important; }
   }
 
-/* ── REPORT TEMPLATE STYLES ── */
+  /* ── REPORT TEMPLATE STYLES ── */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Playfair+Display:ital@1&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -1215,6 +1142,7 @@
       </div>
     </li>
     <li><a href="#pricing">料金</a></li>
+    <li><a href="#community">コミュニティ</a></li>
   </ul>
   <a href="https://docs.google.com/forms/d/e/1FAIpQLSdpPTGFUltPHmANs2Jt6rlDW2JdkhpqL9f3q4ZOewu6duKRSw/viewform?usp=sharing&ouid=107953720158343866156" target="_blank" class="nav-cta">無料体験セッションを申し込む</a>
   <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="メニュー">
@@ -1235,6 +1163,7 @@
   <a href="#reporting" class="mobile-menu-sub" onclick="closeMobileMenu()">　📊 レポーティング</a>
   <div class="mobile-menu-divider"></div>
   <a href="#pricing" onclick="closeMobileMenu()">料金</a>
+  <a href="#community" onclick="closeMobileMenu()">コミュニティ</a>
   <a href="https://docs.google.com/forms/d/e/1FAIpQLSdpPTGFUltPHmANs2Jt6rlDW2JdkhpqL9f3q4ZOewu6duKRSw/viewform?usp=sharing&ouid=107953720158343866156" target="_blank" class="mobile-menu-cta" onclick="closeMobileMenu()">無料体験セッションを申し込む</a>
 </div>
 
@@ -1435,7 +1364,7 @@
 
     <!-- 比較表 -->
     <div class="reveal" style="margin-bottom:0;">
-      <p style="font-size:12px;font-weight:700;color:var(--teal);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;">3つの決定的な違い</p>
+      <p style="font-size:12px;font-weight:700;color:var(--teal);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;">5つの決定的な違い</p>
       <div style="border-radius:16px;overflow:hidden;border:1px solid var(--gray-light);">
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
           <thead>
@@ -1470,6 +1399,12 @@
               <td style="padding:18px 20px;text-align:center;color:var(--text-mid);">教科書的な「勉強」<br><span style="font-size:11px;color:#b0b0b0;">（義務感）</span></td>
               <td style="padding:18px 20px;text-align:center;color:var(--text-mid);">スパルタ自習<br><span style="font-size:11px;color:#b0b0b0;">（息が詰まる）</span></td>
               <td style="padding:18px 20px;text-align:center;background:var(--teal-xlight);border-left:2px solid var(--teal-light);"><strong style="color:var(--teal-dark);">ライフスタイル型の伴走</strong><br><span style="font-size:11px;color:var(--teal);">英語を話す日常をデザインする</span></td>
+            </tr>
+            <tr style="border-top:1px solid var(--gray-light);">
+              <td style="padding:18px 20px;font-weight:700;color:var(--text);background:var(--off-white);font-size:12px;">⑤ コミュニティ</td>
+              <td style="padding:18px 20px;text-align:center;color:var(--text-mid);">なし<br><span style="font-size:11px;color:#b0b0b0;">（孤独な学習）</span></td>
+              <td style="padding:18px 20px;text-align:center;color:var(--text-mid);">なし<br><span style="font-size:11px;color:#b0b0b0;">（孤独な学習）</span></td>
+              <td style="padding:18px 20px;text-align:center;background:var(--teal-xlight);border-left:2px solid var(--teal-light);"><strong style="color:var(--teal-dark);">仲間と続けられる環境</strong><br><span style="font-size:11px;color:var(--teal);">オンライン＋定期交流会（在籍中・卒業後）</span></td>
             </tr>
           </tbody>
         </table>
@@ -1584,14 +1519,25 @@
 </section>
 
 <!-- ⑤ Vibes伴走サイクル -->
-<section class="service" id="oscar" style="background:var(--white);">
+<section class="service accordion-section" id="oscar">
   <div class="container">
 
     <div class="section-header reveal">
       <div class="section-tag">Coaching Framework</div>
       <h2 class="section-title">Vibes伴走サイクル —<br>らせん階段の構造</h2>
       <p class="section-sub">3つの伴走フェーズのサイクルを伴走し、主体的に回せる学習習慣を構築します。このサイクルは「らせん階段」のように、同じステップを繰り返しながらも確実に上の段へ進んでいく構造です。</p>
+      <button class="accordion-toggle" onclick="toggleAccordion('oscar-body')">
+        <span class="acc-toggle-left">
+          <span class="acc-toggle-icon">🔄</span>
+          <span class="acc-toggle-texts">
+            <span class="acc-toggle-label">詳細を見る</span>
+            <span class="acc-toggle-sub">設計 → 実戦 → 内省のらせん構造</span>
+          </span>
+        </span>
+        <span class="acc-arrow">▼</span>
+      </button>
     </div>
+    <div class="accordion-body" id="oscar-body">
 
     <!-- 螺旋階段フロー図 -->
     <div class="reveal" style="margin-bottom:32px;">
@@ -1712,12 +1658,11 @@
         </div>
       </div>
 
-    </div>
+    </div><!-- /3フェーズカード -->
 
+    </div><!-- /accordion-body oscar -->
   </div>
 </section>
-
-<!-- ─── サービス詳細ブリッジ ─── -->
 <div style="background:var(--teal-dark);padding:48px 0;" id="service-details">
   <div class="container">
     <div style="display:flex;align-items:center;gap:24px;">
@@ -1827,7 +1772,7 @@
 <!-- ⑦ ACEプログラム（フリートーク） -->
 <!-- ⑦ ACEプログラム（フリートーク） -->
 <!-- ⑦ ACEプログラム（フリートーク） -->
-<section class="program" id="program">
+<section class="program accordion-section" id="program">
   <div class="container">
 
     <div class="section-header reveal">
@@ -2054,7 +1999,7 @@
 </section>
 
 <!-- ⑨ レポーティング -->
-<section class="reporting" id="reporting">
+<section class="reporting accordion-section" id="reporting">
   <div class="container">
     <div class="section-header reveal">
       <div class="section-tag">Reporting System</div>
@@ -2266,6 +2211,59 @@
   </div>
 </section>
 
+<!-- ⑫ コミュニティ -->
+<section style="background:var(--off-white);padding:96px 0;" id="community">
+  <div class="container">
+
+    <div class="section-header reveal">
+      <div class="section-tag">Community</div>
+      <h2 class="section-title">卒業後も、一人じゃない。</h2>
+      <p class="section-sub">英語の自走状態は、コーチとの6ヶ月で「型」を手に入れた後も、仲間と使い続けることで本物になります。コミュニティはその「場所」です。</p>
+    </div>
+
+    <!-- 核心メッセージ -->
+    <div class="reveal" style="background:var(--teal-xlight);border-left:4px solid var(--teal);border-radius:0 12px 12px 0;padding:20px 28px;margin-bottom:40px;">
+      <p style="font-size:13px;color:var(--text);line-height:1.9;margin:0;">英語学習が続かない最大の理由のひとつは、<strong>「孤独」</strong>です。同じ悩みを持つ仲間の存在、実際に英語を使う場の確保、卒業後も繋がり続けられる環境——<br>これらはVibes Englishが目指す「コーチ依存ゼロ」を実現するための、伴走の延長線上にある仕組みです。</p>
+    </div>
+
+    <!-- 3つの価値 + 活動内容 -->
+    <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:32px;">
+
+      <div style="background:white;border:1px solid var(--gray-light);border-radius:14px;padding:24px 20px;">
+        <div style="font-size:22px;margin-bottom:12px;">🤝</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;">共感と仲間の存在</div>
+        <div style="font-size:12px;color:var(--text-mid);line-height:1.75;font-weight:300;">同じ壁にぶつかっている仲間と繋がることで、孤独感が消え、継続の燃料になる。</div>
+      </div>
+
+      <div style="background:white;border:1px solid var(--gray-light);border-radius:14px;padding:24px 20px;">
+        <div style="font-size:22px;margin-bottom:12px;">🎤</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;">実際に英語を使う場</div>
+        <div style="font-size:12px;color:var(--text-mid);line-height:1.75;font-weight:300;">定期交流会でセッション外の実践量を確保。受講生・卒業生が集まり、生きた英語の場として機能する。</div>
+      </div>
+
+      <div style="background:white;border:1px solid var(--gray-light);border-radius:14px;padding:24px 20px;">
+        <div style="font-size:22px;margin-bottom:12px;">🎓</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;">卒業後も続く関係</div>
+        <div style="font-size:12px;color:var(--text-mid);line-height:1.75;font-weight:300;">在籍中の仲間も、卒業した先輩も同じ場に集まる。「英語で生きる人たち」のネットワークが自走の後押しになる。</div>
+      </div>
+
+    </div>
+
+    <!-- Coming Soon -->
+    <div class="reveal" style="text-align:center;padding-top:8px;">
+      <div style="display:inline-flex;align-items:center;gap:10px;background:white;border:1.5px solid var(--gray-light);border-radius:100px;padding:10px 24px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block;animation:pulse 2s infinite;"></span>
+        <span style="font-size:12.5px;font-weight:700;color:var(--teal-dark);">Coming Soon — 詳細は順次公開予定</span>
+      </div>
+      <p style="font-size:12px;color:var(--gray);margin-top:10px;font-weight:300;">コミュニティの詳細・参加方法は体験セッション時にご案内します</p>
+    </div>
+
+  </div>
+</section>
+<style>
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+</style>
+
 <!-- ⑪ 料金プラン -->
 <section class="pricing" id="pricing">
   <div class="container">
@@ -2336,6 +2334,13 @@
                 <td style="padding:14px 12px;text-align:center;font-size:16px;">△<div style="font-size:10px;color:var(--gray);margin-top:2px;">コーチ依存が残る<br>ケースが多い</div></td>
                 <td style="padding:14px 12px;text-align:center;background:#F0FAF9;font-size:16px;">◎<div style="font-size:10px;color:var(--teal-dark);font-weight:700;margin-top:2px;">卒業後も使える<br>「学習の型」を習得</div></td>
               </tr>
+              <tr style="border-top:1px solid var(--gray-light);">
+                <td style="padding:14px 20px;font-size:12px;font-weight:700;color:var(--text);background:var(--off-white);">コミュニティ・交流会</td>
+                <td style="padding:14px 12px;text-align:center;font-size:16px;">✗<div style="font-size:10px;color:var(--gray);margin-top:2px;">なし</div></td>
+                <td style="padding:14px 12px;text-align:center;font-size:16px;">✗<div style="font-size:10px;color:var(--gray);margin-top:2px;">なし</div></td>
+                <td style="padding:14px 12px;text-align:center;font-size:16px;">✗<div style="font-size:10px;color:var(--gray);margin-top:2px;">なし</div></td>
+                <td style="padding:14px 12px;text-align:center;background:#F0FAF9;font-size:16px;">◎<div style="font-size:10px;color:var(--teal-dark);font-weight:700;margin-top:2px;">オンライン＋<br>定期交流会</div></td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -2393,6 +2398,7 @@
           <div class="plan-item"><span class="chk">✓</span>Vibesサイクルによる伴走サイクル管理</div>
           <div class="plan-item"><span class="chk">✓</span>受講者専用ポータル（セッションノート／予約管理／セッションアーカイブなど）</div>
           <div class="plan-item"><span class="chk">✓</span>セッション外チャットサポート</div>
+          <div class="plan-item"><span class="chk">✓</span>Vibes English コミュニティへのアクセス（オンライン＋定期交流会）</div>
         </div>
         <div class="plan-cta">
           <a href="https://docs.google.com/forms/d/e/1FAIpQLSdpPTGFUltPHmANs2Jt6rlDW2JdkhpqL9f3q4ZOewu6duKRSw/viewform?usp=sharing&ouid=107953720158343866156" target="_blank">無料体験セッションを申し込む →</a>
@@ -2420,6 +2426,7 @@
           <div class="plan-item"><span class="chk">✓</span>あなた専用にカスタマイズされた会話テーマ設計</div>
           <div class="plan-item"><span class="chk">✓</span>習得済みの振り返り習慣を自主的に継続</div>
           <div class="plan-item"><span class="chk">✓</span>信頼関係のある講師との継続セッション</div>
+          <div class="plan-item"><span class="chk">✓</span>Vibes English コミュニティへのアクセス（オンライン＋定期交流会）</div>
           <div class="plan-item" style="color:#aaa;"><span style="color:#ccc;">—</span>&nbsp;レポート・分析サポートは含まない</div>
         </div>
         <div class="plan-cta secondary">
@@ -2501,23 +2508,16 @@
 
   function toggleAccordion(id) {
     const body = document.getElementById(id);
-    const btn = body.previousElementSibling.querySelector
-      ? body.previousElementSibling.querySelector('.accordion-toggle')
-      : null;
-    // find the button that controls this id
-    const allBtns = document.querySelectorAll('.accordion-toggle');
-    let ctrlBtn = null;
-    allBtns.forEach(b => {
-      if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(id)) ctrlBtn = b;
-    });
+    if (!body) return;
     const isOpen = body.classList.contains('open');
     body.classList.toggle('open');
-    if (ctrlBtn) {
-      ctrlBtn.classList.toggle('open');
-      // preserve inner HTML structure, just update label text
-      const label = ctrlBtn.querySelector('.acc-toggle-label');
+    // ボタンを探してトグル
+    const btn = document.querySelector(`[onclick="toggleAccordion('${id}')"]`);
+    if (btn) {
+      btn.classList.toggle('open', !isOpen);
+      const label = btn.querySelector('.acc-toggle-label');
       if (label) label.textContent = isOpen ? '詳細を見る' : '閉じる';
-      const arrow = ctrlBtn.querySelector('.acc-arrow');
+      const arrow = btn.querySelector('.acc-arrow');
       if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
     }
   }
